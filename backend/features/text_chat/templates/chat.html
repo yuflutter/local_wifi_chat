@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WiFi-чат</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💬 WiFi-чат</h1>
+        </div>
+        <div class="chat-area" id="chatArea"></div>
+        <div class="input-area">
+            <div class="input-group">
+                <input type="text" id="authorInput" placeholder="Ваше имя">
+                <textarea id="messageInput" placeholder="Введите сообщение..." rows="1"></textarea>
+                <button onclick="sendMessage()">Отправить</button>
+            </div>
+        </div>
+        <div class="devices-link">
+            <a href="/api/devices?format=html" target="_blank">📱 Список устройств</a>
+            <span style="margin: 0 10px;">|</span>
+            <a href="/">🏠 Главная</a>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
+

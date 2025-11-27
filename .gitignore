@@ -1,0 +1,37 @@
+# Backend (Go)
+backend/local-wifi-chat-backend
+backend/*.exe
+backend/*.exe~
+backend/*.dll
+backend/*.so
+backend/*.dylib
+backend/*.test
+backend/*.out
+backend/go.work
+backend/frontend_bundle/
+
+# Frontend (Kotlin/Gradle)
+frontend/.gradle
+frontend/build/
+!frontend/gradle/wrapper/gradle-wrapper.jar
+!frontend/**/src/main/**/build/
+!frontend/**/src/test/**/build/
+
+# IntelliJ IDEA
+frontend/.idea
+frontend/*.iws
+frontend/*.iml
+frontend/*.ipr
+frontend/out/
+!frontend/**/src/main/**/out/
+!frontend/**/src/test/**/out/
+
+# VS Code
+.vscode/
+
+# Mac OS
+.DS_Store
+
+# Kotlin JS Store
+frontend/kotlin-js-store/
+!frontend/kotlin-js-store/yarn.lock
