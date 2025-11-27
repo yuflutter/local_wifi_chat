@@ -80,9 +80,10 @@ func AddNewMessage(w http.ResponseWriter, r *http.Request, messages *Messages, s
 	message.CreatedAt = time.Now().Truncate(time.Millisecond) // на фронтенде такой формат времени
 	logUserName(r, message.UserName, sessions, userHashHeaderKey)
 
-	messages.Lock()
+	messages.RLock()
+	defer messages.RUnlock()
+
 	messages.All = append([]Message{message}, messages.All...) // новые вставляем в начало списка
-	messages.Unlock()
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})

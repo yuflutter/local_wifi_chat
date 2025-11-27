@@ -18,9 +18,9 @@ import (
 	"local-wifi-chat-backend/features/voice_room"
 )
 
-// Все файлы фронтенда (Flutter Web PWA) должны быть встроены в бинарник бекенда
-// После сборки фронтенда скопируйте содержимое папки "<flutter project>/build/web" в папку "frontend_bundle"
-// После чего соберите или запустите бекенд
+// Все файлы фронтенда (Web PWA) должны быть встроены в бинарник бекенда
+// После сборки фронтенда скопируйте содержимое папки "/local_wifi_chat/frontend/build/dist/js/productionExecutable/"
+// в папку "frontend_bundle", после чего соберите или запустите бекенд
 //
 //go:embed frontend_bundle/*
 var frontendEmbedFS embed.FS
@@ -60,11 +60,11 @@ func main() {
 	// WebSocket endpoint для голосовой комнаты
 	http.HandleFunc("/ws/voice", voice_room.HandleVoiceRoom(voiceHub))
 
-	// Проверяем наличие Flutter Web файлов, пытаясь прочитать index.html
+	// Проверяем наличие фронтенд-файлов, пытаясь прочитать index.html
 	_, err := frontendEmbedFS.ReadFile("frontend_bundle/index.html")
 	if err == nil {
-		log.Println("Flutter Web приложение обнаружено и будет обслуживаться")
-		log.Println("HTML чат доступен по адресу /chat")
+		log.Println("Фронденд Web-приложение обнаружено и будет обслуживаться по пути /")
+		log.Println("Старый HTML чат доступен по пути /chat")
 		text_chat.SetupHTMLChat("/chat")
 
 		// Настраиваем оптимизированную раздачу статических файлов
@@ -83,7 +83,7 @@ func main() {
 
 		http.Handle("/", optimizedHandler)
 	} else {
-		log.Println("Flutter Web файлы не найдены, используется HTML интерфейс")
+		log.Println("Фронтенд Web файлы не найдены, используется HTML интерфейс")
 		text_chat.SetupHTMLChat("/")
 	}
 
