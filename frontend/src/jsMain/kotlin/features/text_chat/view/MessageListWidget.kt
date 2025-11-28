@@ -77,19 +77,24 @@ fun MessageListWidget(
         )
 
         val handleVisible: (dynamic) -> Unit = {
-            if (list.isOlderAvailable && !model.isLoading) {
+            if (list.isOlderAvailable) { // && !model.isLoading) {
                 console.log("Top sentinel visible, loading next batch...")
-                val area = scrollAreaEl
-                val previousScrollHeight = area?.scrollHeight ?: 0
-
+                // Сохраняем позицию скролла до загрузки
+//                val previousScrollHeight = area.scrollHeight
+                val savedDistanceFromBottom = scrollAreaEl?.let {
+                    it.scrollHeight - it.scrollTop - it.clientHeight
+                }
                 scope.launch {
                     model.fetchOlder()
-                    // Сохраняем позицию скролла после загрузки
-//                    val distanceFromBottom = area.scrollHeight - area.scrollTop - area.clientHeight
-
-//                    container?.let {
+                    if (savedDistanceFromBottom != null && savedDistanceFromBottom > 0) {
+//                    scrollAreaEl?.let {
 //                        it.scrollTop = (it.scrollHeight - previousScrollHeight).toDouble()
 //                    }
+                        scrollAreaEl?.let {
+                            val scrollTop = it.scrollHeight - it.clientHeight - savedDistanceFromBottom
+                            if (scrollTop > 0) it.scrollTop = scrollTop
+                        }
+                    }
                 }
             }
         }
