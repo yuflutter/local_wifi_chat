@@ -2,7 +2,6 @@ package main
 
 import (
 	"embed"
-	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
@@ -99,7 +98,7 @@ func userSessionMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		fmt.Printf("%s\n", r.URL)
+		// fmt.Printf("%s\n", r.URL)
 		if strings.HasPrefix(r.URL.Path, "/api/") {
 			ip := GetClientIP(r)
 			userHash := r.Header.Get(config.UserHashHeaderKey)

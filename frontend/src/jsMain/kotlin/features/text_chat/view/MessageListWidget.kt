@@ -28,9 +28,9 @@ fun MessageListWidget(
     model: MessageListModel
 ) {
     val list = model.list
-    val scope = rememberCoroutineScope()
-    var scrollAreaEl by remember { mutableStateOf<HTMLElement?>(null) }
-    var topSentinelEl by remember { mutableStateOf<HTMLElement?>(null) }
+    val coroutineScope = rememberCoroutineScope()
+    var scrollArea by remember { mutableStateOf<HTMLElement?>(null) }
+    var topSentinel by remember { mutableStateOf<HTMLElement?>(null) }
     var isAtTop by remember { mutableStateOf(true) }
     var isAtBottom by remember { mutableStateOf(true) }
 
@@ -50,7 +50,7 @@ fun MessageListWidget(
 
     // Прокрутка вниз после первой загрузки или если пользователь уже внизу
     LaunchedEffect(list.all.size) {
-        scrollAreaEl?.let { area ->
+        scrollArea?.let { area ->
             if (list.all.isNotEmpty() && (model.isFirstFetch || isAtBottom)) {
                 area.scrollTop = area.scrollHeight.toDouble()
             }
@@ -61,8 +61,8 @@ fun MessageListWidget(
     }
 
     // Intersection Observer для автоматической загрузки при видимости верхнего элемента
-    DisposableEffect(topSentinelEl, list.isOlderAvailable) {
-        val sentinel = topSentinelEl ?: return@DisposableEffect onDispose { }
+    DisposableEffect(topSentinel, list.isOlderAvailable) {
+        val sentinel = topSentinel ?: return@DisposableEffect onDispose { }
 
         val observer = js(
             """
@@ -81,16 +81,16 @@ fun MessageListWidget(
                 console.log("Top sentinel visible, loading next batch...")
                 // Сохраняем позицию скролла до загрузки
 //                val previousScrollHeight = area.scrollHeight
-                val savedDistanceFromBottom = scrollAreaEl?.let {
+                val savedDistanceFromBottom = scrollArea?.let {
                     it.scrollHeight - it.scrollTop - it.clientHeight
                 }
-                scope.launch {
+                coroutineScope.launch {
                     model.fetchOlder()
                     if (savedDistanceFromBottom != null && savedDistanceFromBottom > 0) {
 //                    scrollAreaEl?.let {
 //                        it.scrollTop = (it.scrollHeight - previousScrollHeight).toDouble()
 //                    }
-                        scrollAreaEl?.let {
+                        scrollArea?.let {
                             val scrollTop = it.scrollHeight - it.clientHeight - savedDistanceFromBottom
                             if (scrollTop > 0) it.scrollTop = scrollTop
                         }
@@ -109,8 +109,8 @@ fun MessageListWidget(
     }
 
     // Обработчик скролла для отслеживания позиции пользователя
-    DisposableEffect(scrollAreaEl) {
-        val area = scrollAreaEl ?: return@DisposableEffect onDispose { }
+    DisposableEffect(scrollArea) {
+        val area = scrollArea ?: return@DisposableEffect onDispose { }
 
         val handleScroll: (dynamic) -> Unit = {
             // Проверяем, находится ли пользователь вверху (с небольшим порогом)
@@ -142,11 +142,11 @@ fun MessageListWidget(
             property("gap", "12px")
         }
         ref { e ->
-            scrollAreaEl = e
+            scrollArea = e
             onDispose { }
         }
     }) {
-        if (model.list.all.isEmpty()) {
+        if (list.all.isEmpty()) {
             Div({
                 style {
                     textAlign("center")
@@ -164,7 +164,7 @@ fun MessageListWidget(
                     property("width", "100%")
                 }
                 ref { e ->
-                    topSentinelEl = e
+                    topSentinel = e
                     onDispose { }
                 }
             })
@@ -198,7 +198,7 @@ fun MessageListWidget(
                     property("pointer-events", "auto")
                 }
                 onClick {
-                    scrollAreaEl?.let { container ->
+                    scrollArea?.let { container ->
                         container.scrollTop = container.scrollHeight.toDouble()
                     }
                 }
