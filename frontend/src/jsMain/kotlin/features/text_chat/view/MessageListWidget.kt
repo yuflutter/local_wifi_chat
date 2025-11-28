@@ -18,15 +18,20 @@ import org.jetbrains.compose.web.dom.*
 import org.w3c.dom.HTMLElement
 import view.showErrorSnackBar
 
+/**
+ * Список сообщений - реверсивный (новые внизу, старые вверху)
+ * При прокрутке наверх подгружаются старые
+ * Новые подгружаются по таймеру, и добавляются вниз
+ */
 @Composable
 fun MessageListWidget(
     model: MessageListModel
 ) {
     val list = model.list
     val scope = rememberCoroutineScope()
-    var isLoading by remember { mutableStateOf(false) }
-    var scrollContainerRef by remember { mutableStateOf<HTMLElement?>(null) }
-    var topSentinelRef by remember { mutableStateOf<HTMLElement?>(null) }
+    var scrollAreaEl by remember { mutableStateOf<HTMLElement?>(null) }
+    var topSentinelEl by remember { mutableStateOf<HTMLElement?>(null) }
+    var isAtTop by remember { mutableStateOf(true) }
     var isAtBottom by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
@@ -45,16 +50,19 @@ fun MessageListWidget(
 
     // Прокрутка вниз после первой загрузки или если пользователь уже внизу
     LaunchedEffect(list.all.size) {
-        scrollContainerRef?.let { container ->
+        scrollAreaEl?.let { area ->
             if (list.all.isNotEmpty() && (model.isFirstFetch || isAtBottom)) {
-                container.scrollTop = container.scrollHeight.toDouble()
+                area.scrollTop = area.scrollHeight.toDouble()
             }
         }
+//        if (isAtTop && list.isOlderOnesAvailable) {
+//            model.fetchOlder()
+//        }
     }
 
     // Intersection Observer для автоматической загрузки при видимости верхнего элемента
-    DisposableEffect(topSentinelRef, list.isOlderOnesAvailable, isLoading) {
-        val sentinel = topSentinelRef ?: return@DisposableEffect onDispose { }
+    DisposableEffect(topSentinelEl, list.isOlderAvailable) {
+        val sentinel = topSentinelEl ?: return@DisposableEffect onDispose { }
 
         val observer = js(
             """
@@ -69,19 +77,19 @@ fun MessageListWidget(
         )
 
         val handleVisible: (dynamic) -> Unit = {
-            if (list.isOlderOnesAvailable && !isLoading) {
+            if (list.isOlderAvailable && !model.isLoading) {
                 console.log("Top sentinel visible, loading next batch...")
-                isLoading = true
-                val container = scrollContainerRef
-                val previousScrollHeight = container?.scrollHeight ?: 0
+                val area = scrollAreaEl
+                val previousScrollHeight = area?.scrollHeight ?: 0
 
                 scope.launch {
                     model.fetchOlder()
                     // Сохраняем позицию скролла после загрузки
-                    container?.let {
-                        it.scrollTop = (it.scrollHeight - previousScrollHeight).toDouble()
-                    }
-                    isLoading = false
+//                    val distanceFromBottom = area.scrollHeight - area.scrollTop - area.clientHeight
+
+//                    container?.let {
+//                        it.scrollTop = (it.scrollHeight - previousScrollHeight).toDouble()
+//                    }
                 }
             }
         }
@@ -96,28 +104,25 @@ fun MessageListWidget(
     }
 
     // Обработчик скролла для отслеживания позиции пользователя
-    DisposableEffect(scrollContainerRef) {
-        val container = scrollContainerRef ?: return@DisposableEffect onDispose { }
+    DisposableEffect(scrollAreaEl) {
+        val area = scrollAreaEl ?: return@DisposableEffect onDispose { }
 
         val handleScroll: (dynamic) -> Unit = {
-            val scrollTop = container.scrollTop
-            val scrollHeight = container.scrollHeight
-            val clientHeight = container.clientHeight
+            // Проверяем, находится ли пользователь вверху (с небольшим порогом)
+            isAtTop = (area.scrollTop < 50)
 
             // Проверяем, находится ли пользователь внизу (с небольшим порогом)
-            val distanceFromBottom = scrollHeight - scrollTop - clientHeight
-            isAtBottom = distanceFromBottom < 50
+            val distanceFromBottom = area.scrollHeight - area.scrollTop - area.clientHeight
+            isAtBottom = (distanceFromBottom < 50)
 
             // Скрываем кнопку если пользователь внизу
-            if (isAtBottom) {
-                model.isNewerOnesUnread = false
-            }
+            if (isAtBottom) model.isNewerUnread = false
         }
 
-        container.addEventListener("scroll", handleScroll)
+        area.addEventListener("scroll", handleScroll)
 
         onDispose {
-            container.removeEventListener("scroll", handleScroll)
+            area.removeEventListener("scroll", handleScroll)
         }
     }
 
@@ -132,7 +137,7 @@ fun MessageListWidget(
             property("gap", "12px")
         }
         ref { e ->
-            scrollContainerRef = e
+            scrollAreaEl = e
             onDispose { }
         }
     }) {
@@ -154,7 +159,7 @@ fun MessageListWidget(
                     property("width", "100%")
                 }
                 ref { e ->
-                    topSentinelRef = e
+                    topSentinelEl = e
                     onDispose { }
                 }
             })
@@ -165,7 +170,7 @@ fun MessageListWidget(
         }
 
         // Плавающая кнопка прокрутки вниз с position: sticky
-        if (model.isNewerOnesUnread && !isAtBottom) {
+        if (model.isNewerUnread && !isAtBottom) {
             Div({
                 style {
                     width(50.px)
@@ -188,7 +193,7 @@ fun MessageListWidget(
                     property("pointer-events", "auto")
                 }
                 onClick {
-                    scrollContainerRef?.let { container ->
+                    scrollAreaEl?.let { container ->
                         container.scrollTop = container.scrollHeight.toDouble()
                     }
                 }

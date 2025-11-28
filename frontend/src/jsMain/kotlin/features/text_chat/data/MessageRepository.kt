@@ -31,7 +31,7 @@ class MessageRepository : AbstractMessageRepository {
             val batch = api.get<List<Message>>(url.build())
             return MessageList(
                 all = batch,
-                isOlderOnesAvailable = (batch.size == limit),
+                isOlderAvailable = (batch.size == limit),
             )
 
         } catch (e: HumanErrorInfo) {

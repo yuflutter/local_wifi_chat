@@ -12,51 +12,59 @@ class MessageListModel(
 ) {
     var list by mutableStateOf(MessageList.empty())
 
+    var isLoading by mutableStateOf(false)
+
     // флаг первой загрузки, используется для принудительного скролла в конец
     var isFirstFetch by mutableStateOf(false)
 
     // имеются новые непрочитанные, используется для показа кнопки "вниз"
-    var isNewerOnesUnread by mutableStateOf(false)
+    var isNewerUnread by mutableStateOf(false)
 
     suspend fun fetchTop() = fetch(FetchMode.TOP)
     suspend fun fetchOlder() = fetch(FetchMode.OLDER)
     suspend fun fetchNewer() = fetch(FetchMode.NEWER)
 
     private suspend fun fetch(fetchMode: FetchMode) {
-        when (fetchMode) {
-            FetchMode.TOP -> {
-                val bath = repository.fetchMessages()
-                list = bath
-                isFirstFetch = true
-                log.info(null, "Top batch loaded: ${bath.all.size} items")
-            }
-
-            FetchMode.OLDER -> {
-                val bath = repository.fetchMessages(olderThan = list.all.lastOrNull())
-                if (bath.all.isNotEmpty()) {
-                    log.info(null, "Batch of older loaded: ${bath.all.size} items")
+        isLoading = true
+        try {
+            when (fetchMode) {
+                FetchMode.TOP -> {
+                    val bath = repository.fetchMessages()
+                    list = bath
+                    isFirstFetch = true
+                    log.info(null, "Top batch loaded: ${bath.all.size} items")
                 }
-                list = MessageList(
-                    all = list.all + bath.all,
-                    isOlderOnesAvailable = bath.isOlderOnesAvailable,
-                    error = bath.error,
-                )
-                isFirstFetch = false
-            }
 
-            FetchMode.NEWER -> {
-                val bath = repository.fetchMessages(newerThan = list.all.firstOrNull())
-                if (bath.all.isNotEmpty()) {
-                    log.info(null, "Batch of newer loaded: ${bath.all.size} items")
-                    isNewerOnesUnread = true
+                FetchMode.OLDER -> {
+                    val bath = repository.fetchMessages(olderThan = list.all.lastOrNull())
+                    if (bath.all.isNotEmpty()) {
+                        log.info(null, "Batch of older loaded: ${bath.all.size} items")
+                    }
+                    list = MessageList(
+                        all = list.all + bath.all,
+                        isOlderAvailable = bath.isOlderAvailable,
+                        error = bath.error,
+                    )
+                    isFirstFetch = false
                 }
-                list = MessageList(
-                    all = bath.all + list.all,
-                    isOlderOnesAvailable = list.isOlderOnesAvailable,
-                    error = bath.error
-                )
-                isFirstFetch = false
+
+                FetchMode.NEWER -> {
+                    val bath = repository.fetchMessages(newerThan = list.all.firstOrNull())
+                    if (bath.all.isNotEmpty()) {
+                        log.info(null, "Batch of newer loaded: ${bath.all.size} items")
+                        isNewerUnread = true
+                    }
+                    list = MessageList(
+                        all = bath.all + list.all,
+                        isOlderAvailable = list.isOlderAvailable,
+                        error = bath.error
+                    )
+                    isFirstFetch = false
+                }
             }
+        } catch (e: Throwable) {
+            isLoading = false
+            throw e
         }
     }
 }

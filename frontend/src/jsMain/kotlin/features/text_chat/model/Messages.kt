@@ -23,13 +23,13 @@ data class Message(
 data class MessageList(
     val all: List<Message>,
     // существуют более старые, но еще не загружены, флаг используется в виджете для догрузки списка при скролле
-    val isOlderOnesAvailable: Boolean,
+    val isOlderAvailable: Boolean,
     // ошибку показываем в снэкбаре, но оставляем ранее загруженные данные на экране
     val error: HumanErrorInfo? = null,
 ) {
     companion object {
         fun empty(error: HumanErrorInfo? = null) = MessageList(
-            all = emptyList(), isOlderOnesAvailable = false, error = error
+            all = emptyList(), isOlderAvailable = false, error = error
         )
     }
 }
