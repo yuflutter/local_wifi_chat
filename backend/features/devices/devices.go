@@ -1,4 +1,4 @@
-package text_chat
+package devices
 
 import (
 	"encoding/json"
@@ -9,32 +9,16 @@ import (
 	"strings"
 )
 
-// HandleDevices возвращает список подключенных устройств
 func HandleDevices(w http.ResponseWriter, r *http.Request) {
 	devices, err := GetConnectedDevices()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Ошибка получения устройств: %v", err), http.StatusInternalServerError)
 		return
 	}
-
 	w.Header().Set("Content-Type", "application/json")
-
-	// Если запрос с параметром ?format=html, возвращаем HTML
-	if r.URL.Query().Get("format") == "html" {
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		data := struct {
-			Devices []DeviceInfo
-		}{
-			Devices: devices,
-		}
-		GetHTMLDevicesTemplate().Execute(w, data)
-		return
-	}
-
 	json.NewEncoder(w).Encode(devices)
 }
 
-// GetConnectedDevices получает список подключенных устройств
 func GetConnectedDevices() ([]DeviceInfo, error) {
 	var devices []DeviceInfo
 

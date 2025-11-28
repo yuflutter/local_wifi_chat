@@ -16,55 +16,44 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 import org.w3c.dom.HTMLElement
-import view.ErrorWidget
 import view.showErrorSnackBar
 
 @Composable
 fun MessageListWidget(
     model: MessageListModel
 ) {
-    val messageList = model.state
+    val list = model.list
     val scope = rememberCoroutineScope()
     var isLoading by remember { mutableStateOf(false) }
     var scrollContainerRef by remember { mutableStateOf<HTMLElement?>(null) }
     var topSentinelRef by remember { mutableStateOf<HTMLElement?>(null) }
-    var showScrollDownButton by remember { mutableStateOf(false) }
     var isAtBottom by remember { mutableStateOf(true) }
-    var previousMessageCount by remember { mutableStateOf(0) }
 
     LaunchedEffect(Unit) {
-        model.fetchFirst()
+        model.fetchTop()
         launch {
             while (true) {
                 delay(di<AppConfig>().fetchRefreshPeriodMs)
-                model.fetchRefresh()
+                model.fetchNewer()
             }
         }
     }
 
-    LaunchedEffect(messageList.error) {
-        if (messageList.error != null) showErrorSnackBar(messageList.error)
+    LaunchedEffect(list.error) {
+        if (list.error != null) showErrorSnackBar(list.error)
     }
 
-    // Прокрутка вниз после первой загрузки или если пользователь внизу
-    LaunchedEffect(messageList.all.size) {
+    // Прокрутка вниз после первой загрузки или если пользователь уже внизу
+    LaunchedEffect(list.all.size) {
         scrollContainerRef?.let { container ->
-            if (messageList.all.isNotEmpty()) {
-                // Если это первая загрузка или пользователь был внизу - прокручиваем
-                if (previousMessageCount == 0 || isAtBottom) {
-                    container.scrollTop = container.scrollHeight.toDouble()
-                    showScrollDownButton = false
-                } else if (messageList.all.size > previousMessageCount) {
-                    // Появились новые сообщения, но пользователь не внизу
-                    showScrollDownButton = true
-                }
-                previousMessageCount = messageList.all.size
+            if (list.all.isNotEmpty() && (model.isFirstFetch || isAtBottom)) {
+                container.scrollTop = container.scrollHeight.toDouble()
             }
         }
     }
 
     // Intersection Observer для автоматической загрузки при видимости верхнего элемента
-    DisposableEffect(topSentinelRef, messageList.hasMore, isLoading) {
+    DisposableEffect(topSentinelRef, list.isOlderOnesAvailable, isLoading) {
         val sentinel = topSentinelRef ?: return@DisposableEffect onDispose { }
 
         val observer = js(
@@ -80,14 +69,14 @@ fun MessageListWidget(
         )
 
         val handleVisible: (dynamic) -> Unit = {
-            if (messageList.hasMore && !isLoading) {
+            if (list.isOlderOnesAvailable && !isLoading) {
                 console.log("Top sentinel visible, loading next batch...")
                 isLoading = true
                 val container = scrollContainerRef
                 val previousScrollHeight = container?.scrollHeight ?: 0
 
                 scope.launch {
-                    model.fetchNext()
+                    model.fetchOlder()
                     // Сохраняем позицию скролла после загрузки
                     container?.let {
                         it.scrollTop = (it.scrollHeight - previousScrollHeight).toDouble()
@@ -121,7 +110,7 @@ fun MessageListWidget(
 
             // Скрываем кнопку если пользователь внизу
             if (isAtBottom) {
-                showScrollDownButton = false
+                model.isNewerOnesUnread = false
             }
         }
 
@@ -142,12 +131,12 @@ fun MessageListWidget(
             flexDirection(FlexDirection.Column)
             property("gap", "12px")
         }
-        ref { element ->
-            scrollContainerRef = element
+        ref { e ->
+            scrollContainerRef = e
             onDispose { }
         }
     }) {
-        if (model.state.all.isEmpty()) {
+        if (model.list.all.isEmpty()) {
             Div({
                 style {
                     textAlign("center")
@@ -157,8 +146,6 @@ fun MessageListWidget(
             }) {
                 Text("No messages")
             }
-//        } else if (messageList.error != null) {
-//            ErrorWidget(errorInfo = messageList.error)
         } else {
             // Sentinel элемент для отслеживания видимости верха списка
             Div({
@@ -166,26 +153,26 @@ fun MessageListWidget(
                     property("height", "1px")
                     property("width", "100%")
                 }
-                ref { element ->
-                    topSentinelRef = element
+                ref { e ->
+                    topSentinelRef = e
                     onDispose { }
                 }
             })
 
-            messageList.all.reversed().forEach { message ->
+            list.all.reversed().forEach { message ->
                 MessageListTile(message)
             }
         }
 
         // Плавающая кнопка прокрутки вниз с position: sticky
-        if (showScrollDownButton) {
+        if (model.isNewerOnesUnread && !isAtBottom) {
             Div({
                 style {
-                    property("position", "sticky")
-                    property("bottom", "16px")
-                    property("left", "calc(100% - 56px)")
-                    property("width", "40px")
-                    property("height", "40px")
+                    width(50.px)
+                    height(50.px)
+                    position(Position.Sticky)
+                    property("bottom", "0px")
+                    property("left", "calc(100% - 50px)")
                     property("margin-top", "auto")
                     property("border-radius", "50%")
                     property("background-color", "#007bff")
@@ -203,11 +190,10 @@ fun MessageListWidget(
                 onClick {
                     scrollContainerRef?.let { container ->
                         container.scrollTop = container.scrollHeight.toDouble()
-                        showScrollDownButton = false
                     }
                 }
             }) {
-                Text("⌄")
+                Text("⇓")
             }
         }
     }

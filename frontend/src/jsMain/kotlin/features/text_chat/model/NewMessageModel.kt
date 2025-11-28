@@ -30,7 +30,7 @@ class NewMessageModel(
 //        throw Exception("Testing adding new message error")
         repository.addNewMessage(state)
         di<UserSession>().userName = state.userName
-        messageListModel.fetchRefresh()
+        messageListModel.fetchNewer()
         state = NewMessage()
     }
 }

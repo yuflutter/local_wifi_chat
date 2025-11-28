@@ -7,15 +7,17 @@ enum class LogType { INFO, API, ERROR }
 
 data class LogEntry(
     val type: LogType,
-    val title: String,
+    val title: String?,
     val text: String,
     val details: Any?,
     val time: Instant = Clock.System.now(),
 ) {
     override fun toString(): String {
         val buf = StringBuilder()
-        buf.append(title, "\t\t", toHumanTime(time))
-        buf.append("\n", text)
+        if (title != null) {
+            buf.append(title, "\t\t", toHumanTime(time), "\n")
+        }
+        buf.append(text)
         if (details != null) buf.append("\n", details)
         return buf.toString()
     }
@@ -36,7 +38,7 @@ abstract class Logger : Initializable {
      */
     fun info(title: String?, text: String, details: Any? = null) = log(
         LogEntry(
-            type = LogType.INFO, title = title ?: "Info", text = text, details = details
+            type = LogType.INFO, title = title, text = text, details = details
         )
     )
 

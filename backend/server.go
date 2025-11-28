@@ -14,24 +14,19 @@ import (
 	"github.com/samber/lo"
 
 	"local-wifi-chat-backend/config"
-	"local-wifi-chat-backend/features/text_chat"
+	"local-wifi-chat-backend/features/devices"
+	"local-wifi-chat-backend/features/textchat"
 	"local-wifi-chat-backend/features/voice_room"
 )
 
-// Все файлы фронтенда (Web PWA) должны быть встроены в бинарник бекенда
+// Все файлы фронтенда должны быть встроены в бинарник бекенда.
 // После сборки фронтенда скопируйте содержимое папки "/local_wifi_chat/frontend/build/dist/js/productionExecutable/"
-// в папку "frontend_bundle", после чего соберите или запустите бекенд
+// в папку "frontend_bundle", после чего соберите или запустите бекенд.
 //
 //go:embed frontend_bundle/*
 var frontendEmbedFS embed.FS
 
-var sessions = &text_chat.Sessions{
-	All: []text_chat.Session{},
-}
-
-var messages = &text_chat.Messages{
-	All: []text_chat.Message{},
-}
+var userSession = NewUserSessionList()
 
 func main() {
 	// Проверяем права на запуск на порту 80
@@ -48,14 +43,14 @@ func main() {
 	http.HandleFunc("/api/messages", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			text_chat.FetchMessages(w, r, messages, config.UserHashHeaderKey)
+			textchat.FetchMessages(w, r)
 		case http.MethodPost:
-			text_chat.AddNewMessage(w, r, messages, sessions, config.UserHashHeaderKey)
+			textchat.AddNewMessage(w, r, logUserName)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
-	http.HandleFunc("/api/devices", text_chat.HandleDevices)
+	http.HandleFunc("/api/devices", devices.HandleDevices)
 
 	// WebSocket endpoint для голосовой комнаты
 	http.HandleFunc("/ws/voice", voice_room.HandleVoiceRoom(voiceHub))
@@ -63,9 +58,7 @@ func main() {
 	// Проверяем наличие фронтенд-файлов, пытаясь прочитать index.html
 	_, err := frontendEmbedFS.ReadFile("frontend_bundle/index.html")
 	if err == nil {
-		log.Println("Фронденд Web-приложение обнаружено и будет обслуживаться по пути /")
-		log.Println("Старый HTML чат доступен по пути /chat")
-		text_chat.SetupHTMLChat("/chat")
+		textchat.SetupHTMLChat("/chat")
 
 		// Настраиваем оптимизированную раздачу статических файлов
 		frontendWebFS, _ := fs.Sub(frontendEmbedFS, "frontend_bundle")
@@ -77,14 +70,14 @@ func main() {
 		// Оборачиваем в gzip handler для сжатия
 		optimizedHandler := gziphandler.GzipHandler(fileServer)
 
-		log.Println("Gzip сжатие: включено для JS, CSS и других текстовых файлов")
+		// log.Println("Gzip сжатие: включено для JS, CSS и других текстовых файлов")
 		// log.Println("  - Cache-Control: долгосрочное кэширование для статических ресурсов")
 		// log.Println("  - Cache-Control: no-cache для index.html и service worker")
 
 		http.Handle("/", optimizedHandler)
 	} else {
-		log.Println("Фронтенд Web файлы не найдены, используется HTML интерфейс")
-		text_chat.SetupHTMLChat("/")
+		log.Println("Фронтенд PWA не найден, используется HTML интерфейс")
+		textchat.SetupHTMLChat("/")
 	}
 
 	localIP := GetLocalIPAddress()
@@ -93,10 +86,10 @@ func main() {
 	} else {
 		log.Printf("Откройте в браузере: http://<ip-адрес-устройства>%s\n", config.Port)
 	}
-	log.Fatal(http.ListenAndServe(config.Port, sessionMiddleware(http.DefaultServeMux)))
+	log.Fatal(http.ListenAndServe(config.Port, userSessionMiddleware(http.DefaultServeMux)))
 }
 
-func sessionMiddleware(next http.Handler) http.Handler {
+func userSessionMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		EnableCORS(w, r)
 
@@ -108,26 +101,37 @@ func sessionMiddleware(next http.Handler) http.Handler {
 
 		fmt.Printf("%s\n", r.URL)
 		if strings.HasPrefix(r.URL.Path, "/api/") {
-			// Получаем IP-адрес клиента и вычисляем(получаем) хэш устройства
 			ip := GetClientIP(r)
 			userHash := r.Header.Get(config.UserHashHeaderKey)
 
-			sessions.Lock()
-			sessionPtr, ok := lo.Find(sessions.All, func(s text_chat.Session) bool { return s.UserHash == userHash })
+			userSession.RLock()
+			session, ok := lo.Find(userSession.All, func(s UserSession) bool { return s.UserHash == userHash })
 			if !ok {
-				newSession := text_chat.Session{
+				newSession := UserSession{
 					UserHash:  userHash,
 					IP:        ip,
 					JoinedAt:  time.Now(),
 					UserNames: []string{},
 				}
-				sessions.All = append(sessions.All, newSession)
+				userSession.All = append(userSession.All, newSession)
 			} else {
 				now := time.Now()
-				sessionPtr.LastActivity = &now
+				session.LastActivity = &now
 			}
-			sessions.Unlock()
+			userSession.RUnlock()
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func logUserName(userHash string, userName string) {
+	session, ok := lo.Find(userSession.All, func(e UserSession) bool { return e.UserHash == userHash })
+	if ok {
+		lastUserName, ok := lo.Last(session.UserNames)
+		if !ok || lastUserName != userName {
+			userSession.Lock()
+			defer userSession.Unlock()
+			session.UserNames = append(session.UserNames, userName)
+		}
+	}
 }

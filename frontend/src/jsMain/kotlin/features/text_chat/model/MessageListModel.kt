@@ -1,42 +1,62 @@
 package features.text_chat.model
 
 import androidx.compose.runtime.*
+import androidx.compose.runtime.setValue
 import core.di
 import core.log
 
-private enum class FetchMode { FIRST, NEXT, REFRESH }
+private enum class FetchMode { TOP, OLDER, NEWER }
 
 class MessageListModel(
     val repository: AbstractMessageRepository = di<AbstractMessageRepository>()
 ) {
-    var state by mutableStateOf(MessageList.empty())
+    var list by mutableStateOf(MessageList.empty())
 
-    suspend fun fetchFirst() = fetch(FetchMode.FIRST)
-    suspend fun fetchNext() = fetch(FetchMode.NEXT)
-    suspend fun fetchRefresh() = fetch(FetchMode.REFRESH)
+    // флаг первой загрузки, используется для принудительного скролла в конец
+    var isFirstFetch by mutableStateOf(false)
+
+    // имеются новые непрочитанные, используется для показа кнопки "вниз"
+    var isNewerOnesUnread by mutableStateOf(false)
+
+    suspend fun fetchTop() = fetch(FetchMode.TOP)
+    suspend fun fetchOlder() = fetch(FetchMode.OLDER)
+    suspend fun fetchNewer() = fetch(FetchMode.NEWER)
 
     private suspend fun fetch(fetchMode: FetchMode) {
         when (fetchMode) {
-            FetchMode.FIRST -> {
+            FetchMode.TOP -> {
                 val bath = repository.fetchMessages()
-                state = bath
-                log.info("List fetch", "First batch loaded: ${bath.all.size} items")
+                list = bath
+                isFirstFetch = true
+                log.info(null, "Top batch loaded: ${bath.all.size} items")
             }
 
-            FetchMode.NEXT -> {
-                val bath = repository.fetchMessages(olderThan = state.all.lastOrNull())
-                state = MessageList(all = state.all + bath.all, hasMore = bath.hasMore, error = bath.error)
-                log.info("List fetch", "Next batch loaded: ${bath.all.size} items")
-            }
-
-            FetchMode.REFRESH -> {
-                val bath = repository.fetchMessages(newerThan = state.all.firstOrNull())
-                state = MessageList(all = bath.all + state.all, hasMore = state.hasMore, error = bath.error)
+            FetchMode.OLDER -> {
+                val bath = repository.fetchMessages(olderThan = list.all.lastOrNull())
                 if (bath.all.isNotEmpty()) {
-                    log.info("List fetch", "Batch of new ones loaded: ${bath.all.size} items")
+                    log.info(null, "Batch of older loaded: ${bath.all.size} items")
                 }
+                list = MessageList(
+                    all = list.all + bath.all,
+                    isOlderOnesAvailable = bath.isOlderOnesAvailable,
+                    error = bath.error,
+                )
+                isFirstFetch = false
+            }
+
+            FetchMode.NEWER -> {
+                val bath = repository.fetchMessages(newerThan = list.all.firstOrNull())
+                if (bath.all.isNotEmpty()) {
+                    log.info(null, "Batch of newer loaded: ${bath.all.size} items")
+                    isNewerOnesUnread = true
+                }
+                list = MessageList(
+                    all = bath.all + list.all,
+                    isOlderOnesAvailable = list.isOlderOnesAvailable,
+                    error = bath.error
+                )
+                isFirstFetch = false
             }
         }
     }
 }
-

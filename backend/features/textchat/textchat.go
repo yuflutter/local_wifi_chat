@@ -1,7 +1,8 @@
-package text_chat
+package textchat
 
 import (
 	"encoding/json"
+	"local-wifi-chat-backend/config"
 	"net/http"
 	"strconv"
 	"time"
@@ -9,7 +10,9 @@ import (
 	"github.com/samber/lo"
 )
 
-func FetchMessages(w http.ResponseWriter, r *http.Request, messages *Messages, userHashHeaderKey string) {
+var messages = NewMesaageList()
+
+func FetchMessages(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	olderThan := query.Get("olderThan")
 	newerThan := query.Get("newerThan")
@@ -28,6 +31,7 @@ func FetchMessages(w http.ResponseWriter, r *http.Request, messages *Messages, u
 	defer messages.RUnlock()
 
 	batch := []Message{}
+
 	if olderThan != "" {
 		olderThen, err := time.Parse(time.RFC3339, olderThan)
 		if err != nil {
@@ -70,15 +74,16 @@ final:
 	json.NewEncoder(w).Encode(batch)
 }
 
-func AddNewMessage(w http.ResponseWriter, r *http.Request, messages *Messages, sessions *Sessions, userHashHeaderKey string) {
+func AddNewMessage(w http.ResponseWriter, r *http.Request, logUserName func(string, string)) {
 	var message Message
 	if err := json.NewDecoder(r.Body).Decode(&message); err != nil {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
-	message.UserHash = r.Header.Get(userHashHeaderKey)
+
+	message.UserHash = r.Header.Get(config.UserHashHeaderKey)
 	message.CreatedAt = time.Now().Truncate(time.Millisecond) // на фронтенде такой формат времени
-	logUserName(r, message.UserName, sessions, userHashHeaderKey)
+	logUserName(message.UserHash, message.UserName)
 
 	messages.RLock()
 	defer messages.RUnlock()
@@ -87,21 +92,4 @@ func AddNewMessage(w http.ResponseWriter, r *http.Request, messages *Messages, s
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
-}
-
-// logUserName записывает имя пользователя в сессию
-func logUserName(r *http.Request, userName string, sessions *Sessions, userHashHeaderKey string) {
-	clientHash := r.Header.Get(userHashHeaderKey)
-	sessions.Lock()
-	defer sessions.Unlock()
-
-	for i := range sessions.All {
-		if sessions.All[i].UserHash == clientHash {
-			lastUserName, ok := lo.Last(sessions.All[i].UserNames)
-			if !ok || lastUserName != userName {
-				sessions.All[i].UserNames = append(sessions.All[i].UserNames, userName)
-			}
-			break
-		}
-	}
 }

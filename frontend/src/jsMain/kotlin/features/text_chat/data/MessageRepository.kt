@@ -29,10 +29,13 @@ class MessageRepository : AbstractMessageRepository {
             url.parameters.append("limit", limit.toString())
 
             val batch = api.get<List<Message>>(url.build())
-            return MessageList(all = batch, hasMore = (batch.size == limit))
+            return MessageList(
+                all = batch,
+                isOlderOnesAvailable = (batch.size == limit),
+            )
 
         } catch (e: HumanErrorInfo) {
-            return MessageList(all = emptyList(), hasMore = (false), error = e)
+            return MessageList.empty(error = e)
         }
     }
 

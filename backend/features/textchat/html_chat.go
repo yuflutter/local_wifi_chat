@@ -1,4 +1,4 @@
-package text_chat
+package textchat
 
 import (
 	"embed"
