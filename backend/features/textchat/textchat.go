@@ -33,7 +33,7 @@ func FetchMessages(w http.ResponseWriter, r *http.Request) {
 	batch := []Message{}
 
 	if olderThan != "" {
-		olderThen, err := time.Parse(time.RFC3339, olderThan)
+		olderThen, err := time.Parse(config.TimeParseLayout, olderThan)
 		if err != nil {
 			http.Error(w, "The \"olderThan\" is not an Iso8601 Time", http.StatusBadRequest)
 			return
@@ -47,12 +47,12 @@ func FetchMessages(w http.ResponseWriter, r *http.Request) {
 		goto final
 
 	} else if newerThan != "" {
-		newerThen, err := time.Parse(time.RFC3339, newerThan)
+		newerThen, err := time.Parse(config.TimeParseLayout, newerThan)
 		if err != nil {
 			http.Error(w, "The \"newerThan\" is not an Iso8601 Time", http.StatusBadRequest)
 			return
 		}
-		_, index, _ := lo.FindIndexOf(messages.All, func(m Message) bool {
+		_, index, _ := lo.FindLastIndexOf(messages.All, func(m Message) bool {
 			return m.CreatedAt.After(newerThen)
 		})
 		if index != -1 {

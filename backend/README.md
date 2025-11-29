@@ -1,4 +1,4 @@
 
-# WiFi Chat - Backend (Go Server)
+# Local WiFi Chat - Backend
 
-Go HTTP сервер с поддержкой WebSocket для голосовой комнаты.
+Go HTTP сервер для текстового чата с поддержкой WebSocket для голосовой комнаты.

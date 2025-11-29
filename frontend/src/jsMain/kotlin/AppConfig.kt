@@ -24,7 +24,7 @@ abstract class AppConfig : Initializable {
 
     // Опции для загрузки списков
     open val fetchBatchSize = 100
-    open val fetchRefreshPeriodMs = 5000L
+    open val fetchRefreshPeriodMs = 3000L
 
     // Ключи в LocalStorage
     val userHashStorageKey = "userHash"
@@ -40,6 +40,7 @@ abstract class AppConfig : Initializable {
 class DebugAppConfig : AppConfig() {
     override val apiUrl = "http://localhost:9090/api"
     override val fetchBatchSize = 5
+
     override suspend fun init() {
         kotlinx.coroutines.delay(1000)
 //        throw Exception("Testing AppConfig initialization error")

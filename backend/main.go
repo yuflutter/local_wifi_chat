@@ -15,7 +15,7 @@ import (
 	"local-wifi-chat-backend/config"
 	"local-wifi-chat-backend/features/devices"
 	"local-wifi-chat-backend/features/textchat"
-	"local-wifi-chat-backend/features/voice_room"
+	"local-wifi-chat-backend/features/voiceroom"
 )
 
 // Все файлы фронтенда должны быть встроены в бинарник бекенда.
@@ -34,7 +34,7 @@ func main() {
 	}
 
 	// Инициализировать VoiceRoomHub
-	voiceHub := voice_room.NewVoiceRoomHub()
+	voiceHub := voiceroom.NewVoiceRoomHub()
 	go voiceHub.Run()
 	voiceHub.StartCleanupTicker()
 
@@ -52,26 +52,18 @@ func main() {
 	http.HandleFunc("/api/devices", devices.HandleDevices)
 
 	// WebSocket endpoint для голосовой комнаты
-	http.HandleFunc("/ws/voice", voice_room.HandleVoiceRoom(voiceHub))
+	http.HandleFunc("/ws/voice", voiceroom.HandleVoiceRoom(voiceHub))
 
 	// Проверяем наличие фронтенд-файлов, пытаясь прочитать index.html
 	_, err := frontendEmbedFS.ReadFile("frontend_bundle/index.html")
 	if err == nil {
 		textchat.SetupHTMLChat("/chat")
 
-		// Настраиваем оптимизированную раздачу статических файлов
 		frontendWebFS, _ := fs.Sub(frontendEmbedFS, "frontend_bundle")
 		fileServer := http.FileServer(http.FS(frontendWebFS))
 
-		// // Оборачиваем в middleware для Cache-Control заголовков
-		// optimizedHandler := cacheControlMiddleware(fileServer)
-
 		// Оборачиваем в gzip handler для сжатия
 		optimizedHandler := gziphandler.GzipHandler(fileServer)
-
-		// log.Println("Gzip сжатие: включено для JS, CSS и других текстовых файлов")
-		// log.Println("  - Cache-Control: долгосрочное кэширование для статических ресурсов")
-		// log.Println("  - Cache-Control: no-cache для index.html и service worker")
 
 		http.Handle("/", optimizedHandler)
 	} else {

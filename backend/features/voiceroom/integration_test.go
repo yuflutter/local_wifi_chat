@@ -1,4 +1,4 @@
-package voice_room
+package voiceroom
 
 import (
 	"encoding/json"
