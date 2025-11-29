@@ -1,6 +1,6 @@
-# Чат на Compose Multiplatform Web
+# Local WiFi Chat - Frontend
 
-Простое WEB-приложение чата для мобильного браузера, написанное на чистом Kotlin
+WEB-приложение чата для мобильного браузера, написанное на чистом Kotlin
 с использованием Compose WEB (compose.web.dom/css, target JS)
 
 ## Возможности
