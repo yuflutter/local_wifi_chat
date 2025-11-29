@@ -31,8 +31,8 @@ fun MessageListWidget(
     val coroutineScope = rememberCoroutineScope()
     var scrollArea by remember { mutableStateOf<HTMLElement?>(null) }
     var topSentinel by remember { mutableStateOf<HTMLElement?>(null) }
-    var isAtTop by remember { mutableStateOf(true) }
     var isAtBottom by remember { mutableStateOf(true) }
+    var savedDistanceFromBottom by remember { mutableStateOf<Double?>(null) }
 
     LaunchedEffect(Unit) {
         model.fetchTop()
@@ -49,15 +49,21 @@ fun MessageListWidget(
     }
 
     // Прокрутка вниз после первой загрузки или если пользователь уже внизу
+    // Или восстановление позиции после загрузки старых сообщений
     LaunchedEffect(list.all.size) {
         scrollArea?.let { area ->
-            if (list.all.isNotEmpty() && (model.forceScrollToTop || isAtBottom)) {
+            if (savedDistanceFromBottom != null) {
+                // Восстанавливаем позицию после загрузки старых сообщений
+                val scrollTop = area.scrollHeight - area.clientHeight - savedDistanceFromBottom!!
+                if (scrollTop > 0) {
+                    area.scrollTop = scrollTop
+                }
+                savedDistanceFromBottom = null
+            } else if (list.all.isNotEmpty() && (model.forceScrollToTop || isAtBottom)) {
+                // Прокрутка вниз для новых сообщений
                 area.scrollTop = area.scrollHeight.toDouble()
             }
         }
-//        if (isAtTop && list.isOlderOnesAvailable) {
-//            model.fetchOlder()
-//        }
     }
 
     // Intersection Observer для автоматической загрузки при видимости верхнего элемента
@@ -77,24 +83,15 @@ fun MessageListWidget(
         )
 
         val handleVisible: (dynamic) -> Unit = {
-            if (list.isOlderAvailable) { // && !model.isLoading) {
+            if (list.isOlderAvailable) {
                 console.log("Top sentinel visible, loading next batch...")
                 // Сохраняем позицию скролла до загрузки
-//                val previousScrollHeight = area.scrollHeight
-                val savedDistanceFromBottom = scrollArea?.let {
-                    it.scrollHeight - it.scrollTop - it.clientHeight
+                scrollArea?.let {
+                    savedDistanceFromBottom = it.scrollHeight - it.scrollTop - it.clientHeight
                 }
                 coroutineScope.launch {
                     model.fetchOlder()
-                    if (savedDistanceFromBottom != null && savedDistanceFromBottom > 0) {
-//                    scrollAreaEl?.let {
-//                        it.scrollTop = (it.scrollHeight - previousScrollHeight).toDouble()
-//                    }
-                        scrollArea?.let {
-                            val scrollTop = it.scrollHeight - it.clientHeight - savedDistanceFromBottom
-                            if (scrollTop > 0) it.scrollTop = scrollTop
-                        }
-                    }
+                    // Восстановление позиции произойдет в LaunchedEffect(list.all.size)
                 }
             }
         }
@@ -113,9 +110,6 @@ fun MessageListWidget(
         val area = scrollArea ?: return@DisposableEffect onDispose { }
 
         val handleScroll: (dynamic) -> Unit = {
-            // Проверяем, находится ли пользователь вверху (с небольшим порогом)
-            isAtTop = (area.scrollTop < 50)
-
             // Проверяем, находится ли пользователь внизу (с небольшим порогом)
             val distanceFromBottom = area.scrollHeight - area.scrollTop - area.clientHeight
             isAtBottom = (distanceFromBottom < 50)
@@ -125,10 +119,7 @@ fun MessageListWidget(
         }
 
         area.addEventListener("scroll", handleScroll)
-
-        onDispose {
-            area.removeEventListener("scroll", handleScroll)
-        }
+        onDispose { area.removeEventListener("scroll", handleScroll) }
     }
 
     Div({
@@ -178,11 +169,13 @@ fun MessageListWidget(
         if (model.isNewerUnread && !isAtBottom) {
             Div({
                 style {
-                    width(50.px)
-                    height(50.px)
+                    width(60.px)
+                    height(60.px)
+                    property("min-width", "60px")
+                    property("min-height", "60px")
                     position(Position.Sticky)
                     property("bottom", "0px")
-                    property("left", "calc(100% - 50px)")
+                    property("left", "calc(100% - 60px)")
                     property("margin-top", "auto")
                     property("border-radius", "50%")
                     property("background-color", "#007bff")
@@ -192,10 +185,11 @@ fun MessageListWidget(
                     property("align-items", "center")
                     property("justify-content", "center")
                     color(Color.white)
-                    property("font-size", "20px")
+                    property("font-size", "24px")
                     property("transition", "all 0.2s")
                     property("z-index", "100")
                     property("pointer-events", "auto")
+                    property("flex-shrink", "0")
                 }
                 onClick {
                     scrollArea?.let { container ->
