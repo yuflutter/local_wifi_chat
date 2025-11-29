@@ -29,16 +29,19 @@ class ApiClient {
         }
     }
 
-    suspend inline fun <reified T> get(url: Url): T {
+    suspend inline fun <reified T> get(url: Url, noLog: Boolean = false): T {
+        val reqLogFunc = { log.apiReq("GET", "$url") }
         try {
-            val reqNum = log.apiReq("GET", "$url")
+            val reqNum = if (!noLog) reqLogFunc() else null
 
             val response: HttpResponse = http.get(url)
-            checkAndLogResponse(reqNum, response)
+            checkAndLogResponse(reqNum, response, reqLogFunc)
 
             return response.body()
 
         } catch (e: Throwable) {
+            // если запрос не залогирован, но выполнен с ошибкой - принудительно логируем и запрос
+            reqLogFunc()
             throw log.error(e)
         }
     }
@@ -67,12 +70,16 @@ class ApiClient {
         }
     }
 
-    suspend fun checkAndLogResponse(reqNum: Int, response: HttpResponse) {
+    suspend fun checkAndLogResponse(reqNum: Int?, response: HttpResponse, reqLogFun: (() -> Int)? = null) {
+//        require(reqNum == null && reqLogFun == null) {
+//            throw Exception("если не предоставлен номер лога запроса, должна быть предоставлена функция логирования запроса")
+//        }
         if (response.status != HttpStatusCode.OK) {
             val errorBody = response.bodyAsText()
-            log.apiRes(reqNum, response.status, errorBody)
+            // если запрос не залогирован, но выполнен с ошибкой - принудительно логируем и запрос
+            log.apiRes(reqNum ?: reqLogFun!!(), response.status, errorBody)
             throw Exception("API error: ${response.status}\n$errorBody")
-        } else {
+        } else if (reqNum != null) {
             log.apiRes(reqNum, response.status, response.bodyAsText())
         }
     }

@@ -10,15 +10,21 @@ private enum class FetchMode { TOP, OLDER, NEWER }
 class MessageListModel(
     val repository: AbstractMessageRepository = di<AbstractMessageRepository>()
 ) {
+    /**
+     * Приходит с бекенда, отсортирован в обратном порядке - от новых к старым (новые в начале списка, старые в хвосте)
+     * Однако в виджете cписок отображается наоборот - новые внизу экрана, старые вверху.
+     * Однако отображение в виджете не влияет на порядок в самом списке. Виджет делает реверс на лету.
+     */
     var list by mutableStateOf(MessageList.empty())
 
-    var isLoading by mutableStateOf(false)
-
-    // флаг первой загрузки, используется для принудительного скролла в конец
-    var isFirstFetch by mutableStateOf(false)
-
-    // имеются новые непрочитанные, используется для показа кнопки "вниз"
+    /** Имеются новые непрочитанные, используется для показа кнопки "вниз" */
     var isNewerUnread by mutableStateOf(false)
+
+    /** Флаг принудительного скролла в начало списка (то есть в низ экрана) */
+    var forceScrollToTop by mutableStateOf(false)
+
+    // пока не используется
+    var isLoading by mutableStateOf(false)
 
     suspend fun fetchTop() = fetch(FetchMode.TOP)
     suspend fun fetchOlder() = fetch(FetchMode.OLDER)
@@ -26,13 +32,14 @@ class MessageListModel(
 
     private suspend fun fetch(fetchMode: FetchMode) {
         isLoading = true
+        forceScrollToTop = false
         try {
             when (fetchMode) {
                 FetchMode.TOP -> {
                     val bath = repository.fetchMessages()
-                    list = bath
-                    isFirstFetch = true
                     log.info(null, "Top batch loaded: ${bath.all.size} items")
+                    list = bath
+                    forceScrollToTop = true
                 }
 
                 FetchMode.OLDER -> {
@@ -45,7 +52,6 @@ class MessageListModel(
                         isOlderAvailable = bath.isOlderAvailable,
                         error = bath.error,
                     )
-                    isFirstFetch = false
                 }
 
                 FetchMode.NEWER -> {
@@ -59,12 +65,12 @@ class MessageListModel(
                         isOlderAvailable = list.isOlderAvailable,
                         error = bath.error
                     )
-                    isFirstFetch = false
                 }
             }
         } catch (e: Throwable) {
-            isLoading = false
             throw e
+        } finally {
+            isLoading = false
         }
     }
 }

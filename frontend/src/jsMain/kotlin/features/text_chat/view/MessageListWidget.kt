@@ -20,7 +20,7 @@ import view.showErrorSnackBar
 
 /**
  * Список сообщений - реверсивный (новые внизу, старые вверху)
- * При прокрутке наверх подгружаются старые
+ * При прокрутке наверх - подгружаются старые
  * Новые подгружаются по таймеру, и добавляются вниз
  */
 @Composable
@@ -51,7 +51,7 @@ fun MessageListWidget(
     // Прокрутка вниз после первой загрузки или если пользователь уже внизу
     LaunchedEffect(list.all.size) {
         scrollArea?.let { area ->
-            if (list.all.isNotEmpty() && (model.isFirstFetch || isAtBottom)) {
+            if (list.all.isNotEmpty() && (model.forceScrollToTop || isAtBottom)) {
                 area.scrollTop = area.scrollHeight.toDouble()
             }
         }

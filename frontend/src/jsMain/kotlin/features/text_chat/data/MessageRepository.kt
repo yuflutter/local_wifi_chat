@@ -28,7 +28,7 @@ class MessageRepository : AbstractMessageRepository {
             newerThan?.let { url.parameters.append("newerThan", newerThan.createdAt.toString()) }
             url.parameters.append("limit", limit.toString())
 
-            val batch = api.get<List<Message>>(url.build())
+            val batch = api.get<List<Message>>(url.build(), noLog = (newerThan != null))
             return MessageList(
                 all = batch,
                 isOlderAvailable = (batch.size == limit),

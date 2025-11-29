@@ -47,7 +47,7 @@ fun HomePage() {
 }
 
 @Composable
-fun AppBottomNavigation(
+private fun AppBottomNavigation(
     currentPage: Page,
     onPageSelected: (Page) -> Unit
 ) {
@@ -73,7 +73,7 @@ fun AppBottomNavigation(
 }
 
 @Composable
-fun NavButton(
+private fun NavButton(
     title: String,
     isSelected: Boolean,
     onClick: () -> Unit
