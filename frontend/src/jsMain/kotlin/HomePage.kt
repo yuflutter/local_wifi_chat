@@ -33,12 +33,20 @@ fun HomePage() {
             property("box-sizing", "border-box")
         }
     }) {
-        // Content area - each page manages its own scroll
-        when (currentPage) {
-            Page.Chat -> ChatPage()
-            Page.Audio -> EmptyPage("Audio-room")
-            Page.Devices -> EmptyPage("Devices")
-            Page.Settings -> InfoPage()
+        // Content area with reserved space for bottom navigation
+        Div({
+            style {
+                property("flex", "1")
+                property("overflow", "hidden")
+                property("box-sizing", "border-box")
+            }
+        }) {
+            when (currentPage) {
+                Page.Chat -> ChatPage()
+                Page.Audio -> EmptyPage("Audio-room")
+                Page.Devices -> EmptyPage("Devices")
+                Page.Settings -> InfoPage()
+            }
         }
 
         AppBottomNavigation(
