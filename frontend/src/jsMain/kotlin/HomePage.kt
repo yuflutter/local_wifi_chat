@@ -9,7 +9,7 @@ import view.SnackBarHost
 
 enum class Page(val title: String) {
     Chat("Chat"),
-    Audio("Audio-room"),
+    Audio("Audio"),
     Devices("Devices"),
     Settings("Info")
 }
