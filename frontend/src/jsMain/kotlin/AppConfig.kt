@@ -23,7 +23,7 @@ abstract class AppConfig : Initializable {
     val textChatUrl = "messages"
 
     // Опции для загрузки списков
-    open val fetchBatchSize = 100
+    open val fetchBatchSize = 10
     open val fetchRefreshPeriodMs = 3000L
 
     // Ключи в LocalStorage

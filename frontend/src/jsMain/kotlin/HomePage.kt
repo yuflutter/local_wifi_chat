@@ -26,10 +26,14 @@ fun HomePage() {
             width(100.vw)
             margin(0.px)
             padding(0.px)
+            property("padding-bottom", "60px") // Space for fixed bottom nav
             fontFamily("system-ui", "-apple-system", "sans-serif")
             backgroundColor(Color("#f5f5f5"))
+            position(Position.Relative)
+            property("box-sizing", "border-box")
         }
     }) {
+        // Content area - each page manages its own scroll
         when (currentPage) {
             Page.Chat -> ChatPage()
             Page.Audio -> EmptyPage("Audio-room")
@@ -53,13 +57,19 @@ private fun AppBottomNavigation(
 ) {
     Div({
         style {
+            position(Position.Fixed)
+            property("bottom", "0")
+            property("left", "0")
+            property("right", "0")
             display(DisplayStyle.Flex)
             justifyContent(JustifyContent.SpaceAround)
             alignItems(AlignItems.Center)
             backgroundColor(Color.white)
             property("border-top", "1px solid #e0e0e0")
             padding(12.px)
+            property("padding-bottom", "calc(12px + env(safe-area-inset-bottom))")
             property("box-shadow", "0 -2px 10px rgba(0,0,0,0.1)")
+            property("z-index", "1000")
         }
     }) {
         Page.entries.forEach { screen ->

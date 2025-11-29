@@ -64,6 +64,7 @@ fun NewMessageForm(
             display(DisplayStyle.Flex)
             flexDirection(FlexDirection.Column)
             property("gap", "8px")
+            property("flex-shrink", "0")
         }
     }) {
         Input(InputType.Text) {

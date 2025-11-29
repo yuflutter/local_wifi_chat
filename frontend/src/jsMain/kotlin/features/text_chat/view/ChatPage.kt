@@ -31,10 +31,11 @@ fun ChatPage() {
             style {
                 display(DisplayStyle.Flex)
                 flexDirection(FlexDirection.Column)
-                flex(1)
+                property("height", "100%")
                 overflow("hidden")
             }
         }) {
+            // Header
             Div({
                 style {
                     padding(16.px)
@@ -43,13 +44,16 @@ fun ChatPage() {
                     fontSize(20.px)
                     fontWeight("600")
                     textAlign("center")
+                    property("flex-shrink", "0")
                 }
             }) {
                 Text("Local WiFi Chat")
             }
 
+            // Scrollable message list
             MessageListWidget(chatModel.messageListModel)
 
+            // Fixed form at bottom
             NewMessageForm(chatModel.newMessageModel)
         }
     }
