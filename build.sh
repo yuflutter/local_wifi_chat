@@ -1,5 +1,5 @@
 cd frontend
-./gradlew jsBrowserDistribution
+./gradlew jsBrowserProductionWebpack
 cd ..
 rm backend/frontend_bundle/*
 cp frontend/build/dist/js/productionExecutable/* backend/frontend_bundle/

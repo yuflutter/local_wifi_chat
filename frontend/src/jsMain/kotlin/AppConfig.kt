@@ -3,9 +3,7 @@ import core.InMemoryLogger
 import core.Initializable
 import features.text_chat.data.MessageRepository
 
-private val flavor = Flavors.Debug  //TODO: ИЗМЕНИТЬ ДЛЯ РЕЛИЗНОЙ СБОРКИ!, перенести в Gradle!
-
-private enum class Flavors { Debug, Prod }
+// flavor и Flavors генерируются автоматически в build.gradle.kts
 
 /**
  * Инжекция и асинхронная инициализация глобальных зависимостей.
@@ -21,6 +19,14 @@ suspend fun initApp() {
 abstract class AppConfig : Initializable {
     abstract val apiUrl: String
     val textChatUrl = "messages"
+    
+    // Информация о приложении
+    val appName = "Local WiFi Chat"
+    val flavorName: String
+        get() = when (flavor) {
+            Flavors.Debug -> "Debug"
+            Flavors.Prod -> "Production"
+        }
 
     // Опции для загрузки списков
     open val fetchBatchSize = 10

@@ -1,6 +1,8 @@
+import AppConfig
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import core.DI
 import features.text_chat.model.ChatModel
 import features.text_chat.model.LocalChatModel
 import org.jetbrains.compose.web.css.Color
@@ -47,7 +49,7 @@ fun ChatPage() {
                     property("flex-shrink", "0")
                 }
             }) {
-                Text("Local WiFi Chat")
+                Text(DI.get<AppConfig>().appName)
             }
 
             // Scrollable message list

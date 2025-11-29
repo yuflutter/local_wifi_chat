@@ -5,6 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
+import view.InfoPage
 import view.SnackBarHost
 
 enum class Page(val title: String) {
@@ -26,7 +27,6 @@ fun HomePage() {
             width(100.vw)
             margin(0.px)
             padding(0.px)
-            property("padding-bottom", "60px") // Space for fixed bottom nav
             fontFamily("system-ui", "-apple-system", "sans-serif")
             backgroundColor(Color("#f5f5f5"))
             position(Position.Relative)
@@ -38,7 +38,7 @@ fun HomePage() {
             Page.Chat -> ChatPage()
             Page.Audio -> EmptyPage("Audio-room")
             Page.Devices -> EmptyPage("Devices")
-            Page.Settings -> EmptyPage("Info")
+            Page.Settings -> InfoPage()
         }
 
         AppBottomNavigation(

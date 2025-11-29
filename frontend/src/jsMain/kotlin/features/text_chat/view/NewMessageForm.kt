@@ -61,6 +61,8 @@ fun NewMessageForm(
             backgroundColor(Color.white)
             property("border-top", "1px solid #e0e0e0")
             padding(12.px)
+            property("padding-bottom", "calc(12px + env(safe-area-inset-bottom))")
+            property("margin-bottom", "60px")
             display(DisplayStyle.Flex)
             flexDirection(FlexDirection.Column)
             property("gap", "8px")
