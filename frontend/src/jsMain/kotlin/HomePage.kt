@@ -23,7 +23,9 @@ fun HomePage() {
         style {
             display(DisplayStyle.Flex)
             flexDirection(FlexDirection.Column)
-            height(100.vh)
+            property("height", "100dvh")
+            property("min-height", "100vh")
+            property("min-height", "-webkit-fill-available")
             width(100.vw)
             margin(0.px)
             padding(0.px)
@@ -65,10 +67,6 @@ private fun AppBottomNavigation(
 ) {
     Div({
         style {
-            position(Position.Fixed)
-            property("bottom", "0")
-            property("left", "0")
-            property("right", "0")
             display(DisplayStyle.Flex)
             justifyContent(JustifyContent.SpaceAround)
             alignItems(AlignItems.Center)
@@ -77,7 +75,7 @@ private fun AppBottomNavigation(
             padding(12.px)
             property("padding-bottom", "calc(12px + env(safe-area-inset-bottom))")
             property("box-shadow", "0 -2px 10px rgba(0,0,0,0.1)")
-            property("z-index", "1000")
+            property("flex-shrink", "0")
         }
     }) {
         Page.entries.forEach { screen ->
