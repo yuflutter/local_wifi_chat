@@ -25,18 +25,13 @@ import (
 //go:embed frontend_bundle/*
 var frontendEmbedFS embed.FS
 
-var userSession = NewUserSessionList()
+var userSessions = NewUserSessionList()
 
 func main() {
 	// Проверяем права на запуск на порту 80
 	if os.Getuid() != 0 {
 		log.Println("ВНИМАНИЕ: Для запуска на портах <1023 нужны права root (sudo)!")
 	}
-
-	// Инициализировать VoiceRoomHub
-	voiceHub := voiceroom.NewVoiceRoomHub()
-	go voiceHub.Run()
-	voiceHub.StartCleanupTicker()
 
 	// API endpoints (регистрируем первыми, чтобы они имели приоритет)
 	http.HandleFunc("/api/messages", func(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +44,13 @@ func main() {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})
+
 	http.HandleFunc("/api/devices", devices.HandleDevices)
+
+	// Инициализировать VoiceRoomHub
+	voiceHub := voiceroom.NewVoiceRoomHub()
+	go voiceHub.Run()
+	voiceHub.StartCleanupTicker()
 
 	// WebSocket endpoint для голосовой комнаты
 	http.HandleFunc("/ws/voice", voiceroom.HandleVoiceRoom(voiceHub))
@@ -57,8 +58,6 @@ func main() {
 	// Проверяем наличие фронтенд-файлов, пытаясь прочитать index.html
 	_, err := frontendEmbedFS.ReadFile("frontend_bundle/index.html")
 	if err == nil {
-		textchat.SetupHTMLChat("/chat")
-
 		frontendWebFS, _ := fs.Sub(frontendEmbedFS, "frontend_bundle")
 		fileServer := http.FileServer(http.FS(frontendWebFS))
 
@@ -66,6 +65,9 @@ func main() {
 		optimizedHandler := gziphandler.GzipHandler(fileServer)
 
 		http.Handle("/", optimizedHandler)
+
+		textchat.SetupHTMLChat("/chat")
+
 	} else {
 		log.Println("Фронтенд PWA не найден, используется HTML интерфейс")
 		textchat.SetupHTMLChat("/")
@@ -77,7 +79,10 @@ func main() {
 	} else {
 		log.Printf("Откройте в браузере: http://<ip-адрес-устройства>%s\n", config.Port)
 	}
-	log.Fatal(http.ListenAndServe(config.Port, userSessionMiddleware(http.DefaultServeMux)))
+
+	log.Fatal(
+		http.ListenAndServe(config.Port, userSessionMiddleware(http.DefaultServeMux)),
+	)
 }
 
 func userSessionMiddleware(next http.Handler) http.Handler {
@@ -95,8 +100,8 @@ func userSessionMiddleware(next http.Handler) http.Handler {
 			ip := GetClientIP(r)
 			userHash := r.Header.Get(config.UserHashHeaderKey)
 
-			userSession.RLock()
-			session, ok := lo.Find(userSession.All, func(s UserSession) bool { return s.UserHash == userHash })
+			userSessions.RLock()
+			session, ok := lo.Find(userSessions.All, func(s UserSession) bool { return s.UserHash == userHash })
 			if !ok {
 				newSession := UserSession{
 					UserHash:  userHash,
@@ -104,24 +109,24 @@ func userSessionMiddleware(next http.Handler) http.Handler {
 					JoinedAt:  time.Now(),
 					UserNames: []string{},
 				}
-				userSession.All = append(userSession.All, newSession)
+				userSessions.All = append(userSessions.All, newSession)
 			} else {
 				now := time.Now()
 				session.LastActivity = &now
 			}
-			userSession.RUnlock()
+			userSessions.RUnlock()
 		}
 		next.ServeHTTP(w, r)
 	})
 }
 
 func logUserName(userHash string, userName string) {
-	session, ok := lo.Find(userSession.All, func(e UserSession) bool { return e.UserHash == userHash })
+	session, ok := lo.Find(userSessions.All, func(e UserSession) bool { return e.UserHash == userHash })
 	if ok {
 		lastUserName, ok := lo.Last(session.UserNames)
 		if !ok || lastUserName != userName {
-			userSession.Lock()
-			defer userSession.Unlock()
+			userSessions.Lock()
+			defer userSessions.Unlock()
 			session.UserNames = append(session.UserNames, userName)
 		}
 	}

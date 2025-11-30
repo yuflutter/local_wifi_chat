@@ -1,3 +1,7 @@
+package view
+
+import ChatPage
+import EmptyPage
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -5,8 +9,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
-import view.InfoPage
-import view.SnackBarHost
 
 enum class Page(val title: String) {
     Chat("Chat"),

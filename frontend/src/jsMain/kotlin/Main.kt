@@ -8,6 +8,7 @@ import org.jetbrains.compose.web.renderComposable
 import core.HumanErrorInfo
 import core.log
 import view.ErrorWidget
+import view.HomePage
 import view.WaitingWidget
 
 fun main() {
