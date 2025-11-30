@@ -12,7 +12,21 @@ import (
 
 var messages = NewMesaageList()
 
-func FetchMessages(w http.ResponseWriter, r *http.Request) {
+func HandleTextChat(path string, logUserName func(string, string)) {
+
+	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			getMessages(w, r)
+		case http.MethodPost:
+			addNewMessage(w, r, logUserName)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+}
+
+func getMessages(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	olderThan := query.Get("olderThan")
 	newerThan := query.Get("newerThan")
@@ -74,7 +88,7 @@ final:
 	json.NewEncoder(w).Encode(batch)
 }
 
-func AddNewMessage(w http.ResponseWriter, r *http.Request, logUserName func(string, string)) {
+func addNewMessage(w http.ResponseWriter, r *http.Request, logUserName func(string, string)) {
 	var message Message
 	if err := json.NewDecoder(r.Body).Decode(&message); err != nil {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)

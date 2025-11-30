@@ -33,19 +33,9 @@ func main() {
 		log.Println("ВНИМАНИЕ: Для запуска на портах <1023 нужны права root (sudo)!")
 	}
 
-	// API endpoints (регистрируем первыми, чтобы они имели приоритет)
-	http.HandleFunc("/api/messages", func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			textchat.FetchMessages(w, r)
-		case http.MethodPost:
-			textchat.AddNewMessage(w, r, logUserName)
-		default:
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		}
-	})
+	textchat.HandleTextChat("/api/messages", logUserName)
 
-	http.HandleFunc("/api/devices", devices.HandleDevices)
+	devices.HandleDevices("/api/devices")
 
 	// Инициализировать VoiceRoomHub
 	voiceHub := voiceroom.NewVoiceRoomHub()
@@ -57,7 +47,11 @@ func main() {
 
 	// Проверяем наличие фронтенд-файлов, пытаясь прочитать index.html
 	_, err := frontendEmbedFS.ReadFile("frontend_bundle/index.html")
-	if err == nil {
+	if err != nil {
+		log.Fatal("Фронтенд-бандл не найден!")
+		return
+
+	} else {
 		frontendWebFS, _ := fs.Sub(frontendEmbedFS, "frontend_bundle")
 		fileServer := http.FileServer(http.FS(frontendWebFS))
 
@@ -65,12 +59,6 @@ func main() {
 		optimizedHandler := gziphandler.GzipHandler(fileServer)
 
 		http.Handle("/", optimizedHandler)
-
-		textchat.SetupHTMLChat("/chat")
-
-	} else {
-		log.Println("Фронтенд PWA не найден, используется HTML интерфейс")
-		textchat.SetupHTMLChat("/")
 	}
 
 	localIP := GetLocalIPAddress()

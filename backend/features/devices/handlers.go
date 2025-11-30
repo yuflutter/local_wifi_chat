@@ -9,8 +9,19 @@ import (
 	"strings"
 )
 
-func HandleDevices(w http.ResponseWriter, r *http.Request) {
-	devices, err := GetConnectedDevices()
+func HandleDevices(path string) {
+	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			getDevices(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+}
+
+func getDevices(w http.ResponseWriter, r *http.Request) {
+	devices, err := getConnectedDevices()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Ошибка получения устройств: %v", err), http.StatusInternalServerError)
 		return
@@ -19,7 +30,7 @@ func HandleDevices(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(devices)
 }
 
-func GetConnectedDevices() ([]DeviceInfo, error) {
+func getConnectedDevices() ([]DeviceInfo, error) {
 	var devices []DeviceInfo
 
 	// Пробуем получить устройства через ARP таблицу
@@ -79,7 +90,7 @@ func GetConnectedDevices() ([]DeviceInfo, error) {
 	// Преобразуем map в slice
 	for _, device := range devicesMap {
 		// Фильтруем только локальные IP (192.168.x.x, 10.x.x.x, 172.16-31.x.x)
-		if IsLocalIP(device.IP) {
+		if isLocalIP(device.IP) {
 			if device.HostName == "" {
 				device.HostName = "-"
 			}
@@ -90,8 +101,8 @@ func GetConnectedDevices() ([]DeviceInfo, error) {
 	return devices, nil
 }
 
-// IsLocalIP проверяет, является ли IP локальным
-func IsLocalIP(ipStr string) bool {
+// isLocalIP проверяет, является ли IP локальным
+func isLocalIP(ipStr string) bool {
 	return strings.HasPrefix(ipStr, "192.168.") ||
 		strings.HasPrefix(ipStr, "10.") ||
 		strings.HasPrefix(ipStr, "172.16.") ||
