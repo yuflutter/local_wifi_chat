@@ -71,14 +71,16 @@ class ApiClient {
     }
 
     suspend fun checkAndLogResponse(reqNum: Int?, response: HttpResponse, reqLogFun: (() -> Int)? = null) {
-//        require(reqNum == null && reqLogFun == null) {
-//            throw Exception("если не предоставлен номер лога запроса, должна быть предоставлена функция логирования запроса")
-//        }
+        require(!(reqNum == null && reqLogFun == null)) {
+            "Если не предоставлен номер лога запроса, должна быть предоставлена функция логирования запроса"
+        }
+
         if (response.status != HttpStatusCode.OK) {
             val errorBody = response.bodyAsText()
             // если запрос не залогирован, но выполнен с ошибкой - принудительно логируем и запрос
             log.apiRes(reqNum ?: reqLogFun!!(), response.status, errorBody)
             throw Exception("API error: ${response.status}\n$errorBody")
+
         } else if (reqNum != null) {
             log.apiRes(reqNum, response.status, response.bodyAsText())
         }

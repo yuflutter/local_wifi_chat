@@ -169,13 +169,13 @@ fun MessageListWidget(
         if (model.isNewerUnread && !isAtBottom) {
             Div({
                 style {
-                    width(60.px)
-                    height(60.px)
-                    property("min-width", "60px")
-                    property("min-height", "60px")
+                    width(50.px)
+                    height(50.px)
+                    property("min-width", "50px")
+                    property("min-height", "50px")
                     position(Position.Sticky)
                     property("bottom", "0px")
-                    property("left", "calc(100% - 60px)")
+                    property("left", "calc(100% - 50px)")
                     property("margin-top", "auto")
                     property("border-radius", "50%")
                     property("background-color", "#007bff")

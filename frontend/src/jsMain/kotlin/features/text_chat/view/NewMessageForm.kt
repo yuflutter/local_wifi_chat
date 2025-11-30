@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import core.HumanErrorInfo
 import core.log
 import features.text_chat.model.NewMessageModel
 import view.showErrorSnackBar
@@ -43,7 +44,9 @@ fun NewMessageForm(
     val validateAndSend = {
         scope.launch {
             val errors = newMessage.validate()
-            if (errors == null) {
+            if (errors != null) {
+//                showErrorSnackBar(HumanErrorInfo("Ошибка валидации", errors))
+            } else {
                 try {
                     model.add()
                     // Сброс высоты textarea после успешной отправки
@@ -101,7 +104,7 @@ fun NewMessageForm(
                 onInput { event ->
                     val target = event.target
                     model.setText(target.value)
-                    
+
                     // Автоматическое изменение высоты
                     target.style.height = "auto"
                     val scrollHeight = target.scrollHeight

@@ -7,6 +7,7 @@ import org.jetbrains.compose.web.dom.Text
 fun EmptyPage(title: String) {
     Div({
         style {
+            height(100.percent)
             display(DisplayStyle.Flex)
             flexDirection(FlexDirection.Column)
             flex(1)

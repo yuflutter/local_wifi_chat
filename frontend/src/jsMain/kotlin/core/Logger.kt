@@ -26,7 +26,7 @@ data class LogEntry(
 data class HumanErrorInfo(
     val title: String,
     val text: String,
-    val details: String?,
+    val details: String? = null,
     val time: Instant = Clock.System.now()
 ) : Throwable()
 

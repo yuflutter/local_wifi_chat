@@ -8,11 +8,14 @@ import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Text
 
+// BuildInfo генерируется в build.gradle.kts
+
 @Composable
 fun InfoPage() {
     val config = DI.get<AppConfig>()
     Div({
         style {
+            height(100.percent)
             display(DisplayStyle.Flex)
             flexDirection(FlexDirection.Column)
             flex(1)
@@ -29,7 +32,7 @@ fun InfoPage() {
                 textAlign("center")
             }
         }) {
-            Text(config.appName)
+            Text("Info")
         }
         
         // Контент
@@ -44,6 +47,7 @@ fun InfoPage() {
                 padding(24.px)
             }
         }) {
+            InfoItem("App", config.appName)
             InfoItem("Version", BuildInfo.VERSION)
             InfoItem("Build Time", BuildInfo.BUILD_TIME)
             InfoItem("Flavor", config.flavorName)

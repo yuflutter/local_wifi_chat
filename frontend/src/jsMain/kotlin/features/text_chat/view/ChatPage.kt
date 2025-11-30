@@ -2,7 +2,7 @@ import AppConfig
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
-import core.DI
+import core.di
 import features.text_chat.model.ChatModel
 import features.text_chat.model.LocalChatModel
 import org.jetbrains.compose.web.css.Color
@@ -11,7 +11,6 @@ import org.jetbrains.compose.web.css.FlexDirection
 import org.jetbrains.compose.web.css.backgroundColor
 import org.jetbrains.compose.web.css.color
 import org.jetbrains.compose.web.css.display
-import org.jetbrains.compose.web.css.flex
 import org.jetbrains.compose.web.css.flexDirection
 import org.jetbrains.compose.web.css.fontSize
 import org.jetbrains.compose.web.css.fontWeight
@@ -49,7 +48,7 @@ fun ChatPage() {
                     property("flex-shrink", "0")
                 }
             }) {
-                Text(DI.get<AppConfig>().appName)
+                Text(di<AppConfig>().appName)
             }
 
             // Scrollable message list

@@ -3,7 +3,9 @@ import core.InMemoryLogger
 import core.Initializable
 import features.text_chat.data.MessageRepository
 
-// flavor и Flavors генерируются автоматически в build.gradle.kts
+// flavor и Flavors генерируются в build.gradle.kts
+// internal enum class Flavors { Debug, Prod }
+// internal val flavor = Flavors.$flavor
 
 /**
  * Инжекция и асинхронная инициализация глобальных зависимостей.
