@@ -3,6 +3,8 @@ package textchat
 import (
 	"sync"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Message struct {
@@ -12,16 +14,17 @@ type Message struct {
 	Text           string    `json:"text"`
 	CreatedAt      time.Time `json:"createdAt"`
 	LastModifiedAt time.Time `json:"lastModifiedAt,omitempty"`
-	ReplyTo        string    `json:"replyTo,omitempty"`
+	ReplyToId      string    `json:"replyToId,omitempty"`
 	ReplyToQuote   string    `json:"replyToQuote,omitempty"`
 }
 
-func MessageFrom(newMessage NewMessage, userHash string) Message {
+func CreateMessageFrom(newMessage EditableMessage, userHash string) Message {
 	return Message{
+		Id:           uuid.New().String(),
 		UserHash:     userHash,
 		UserName:     newMessage.UserName,
 		Text:         newMessage.Text,
-		ReplyTo:      newMessage.ReplyTo,
+		ReplyToId:    newMessage.ReplyToId,
 		ReplyToQuote: newMessage.ReplyToQuote,
 		CreatedAt:    time.Now().Truncate(time.Millisecond), // на фронтенде такой формат времени
 	}
@@ -32,15 +35,16 @@ type MessageList struct {
 	sync.RWMutex
 }
 
-func NewMesaageList() *MessageList {
+func CreateMessageList() *MessageList {
 	return &MessageList{All: make([]Message, 0)}
 }
 
-// Создается пользователем (приходит с фронтенда)
-type NewMessage struct {
+// Создается/редактируется пользователем (приходит с фронтенда).
+type EditableMessage struct {
+	Id           string `json:"id,omitempty"`
 	UserName     string `json:"userName"`
 	Text         string `json:"text"`
-	ReplyTo      string `json:"replyTo,omitempty"`
+	ReplyToId    string `json:"replyToId,omitempty"`
 	ReplyToQuote string `json:"replyToQuote,omitempty"`
 }
 

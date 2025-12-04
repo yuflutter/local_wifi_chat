@@ -3,6 +3,7 @@ package textchat
 import (
 	"encoding/json"
 	"local-wifi-chat-backend/config"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -10,7 +11,7 @@ import (
 	"github.com/samber/lo"
 )
 
-var messages = NewMesaageList()
+var messages = CreateMessageList()
 
 func HandleTextChat(path string, logUserName func(string, string)) {
 
@@ -19,7 +20,9 @@ func HandleTextChat(path string, logUserName func(string, string)) {
 		case http.MethodGet:
 			getMessages(w, r)
 		case http.MethodPost:
-			addNewMessage(w, r, logUserName)
+			addMessage(w, r, logUserName)
+		case http.MethodPut:
+			updateMessage(w, r, logUserName)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
@@ -88,20 +91,43 @@ final:
 	json.NewEncoder(w).Encode(batch)
 }
 
-func addNewMessage(w http.ResponseWriter, r *http.Request, logUserName func(string, string)) {
-	var newMessage NewMessage
+func addMessage(w http.ResponseWriter, r *http.Request, logUserName func(string, string)) {
+	var newMessage EditableMessage
 	if err := json.NewDecoder(r.Body).Decode(&newMessage); err != nil {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
 
-	message := MessageFrom(newMessage, r.Header.Get(config.UserHashHeaderKey))
+	message := CreateMessageFrom(newMessage, r.Header.Get(config.UserHashHeaderKey))
 	logUserName(message.UserHash, message.UserName)
 
 	messages.RLock()
 	defer messages.RUnlock()
 
 	messages.All = append([]Message{message}, messages.All...) // новые вставляем в начало списка
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+}
+
+func updateMessage(w http.ResponseWriter, r *http.Request, logUserName func(string, string)) {
+	var newMessage EditableMessage
+	if err := json.NewDecoder(r.Body).Decode(&newMessage); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	_, i, ok := lo.FindIndexOf(messages.All, func(e Message) bool {
+		return e.Id == newMessage.Id
+	})
+	if ok {
+		var m = &messages.All[i]
+		m.UserName = newMessage.UserName
+		m.Text = newMessage.Text
+		logUserName(m.UserHash, m.UserName)
+	} else {
+		log.Printf("%s not found in messages", newMessage)
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
