@@ -5,7 +5,7 @@ import kotlinx.datetime.Instant
 
 enum class LogType { INFO, API, ERROR }
 
-data class LogEntry(
+open class LogEntry(
     val type: LogType,
     val title: String?,
     val text: String,
@@ -23,11 +23,18 @@ data class LogEntry(
     }
 }
 
+class ErrorLogEntry(
+    title: String?,
+    text: String,
+    details: Any? = null,
+    time: Instant = Clock.System.now()
+) : LogEntry(LogType.ERROR, title, text, details, time)
+
+
 data class HumanErrorInfo(
     val title: String,
     val text: String,
-    val details: String? = null,
-    val time: Instant = Clock.System.now()
+    val origin: ErrorLogEntry,
 ) : Throwable()
 
 abstract class Logger : Initializable {
@@ -73,7 +80,7 @@ abstract class Logger : Initializable {
     )
 
     /**
-     * Логирует ошибку, возвращает стуктуру для показа пользователю.
+     * Логирует ошибку, возвращает объект для проброса наверх и показа пользователю.
      */
     fun error(error: Throwable, title: String? = null, text: String? = null): HumanErrorInfo {
         val newTitle = title ?: text ?: error.message ?: error.cause?.message ?: error.toString()
@@ -83,9 +90,9 @@ abstract class Logger : Initializable {
         if (error.cause != null) buf.append("\n", error.cause!!.stackTraceToString())
         val newText = buf.toString()
 
-        val logEntry = LogEntry(type = LogType.ERROR, newTitle, newText, error)
+        val logEntry = ErrorLogEntry(newTitle, newText, error)
         log(logEntry)
-        return HumanErrorInfo(newTitle, newText, null, logEntry.time)
+        return HumanErrorInfo(newTitle, newText, logEntry)
     }
 
     protected abstract fun log(entry: LogEntry)

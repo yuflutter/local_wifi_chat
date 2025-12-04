@@ -89,14 +89,13 @@ final:
 }
 
 func addNewMessage(w http.ResponseWriter, r *http.Request, logUserName func(string, string)) {
-	var message Message
-	if err := json.NewDecoder(r.Body).Decode(&message); err != nil {
+	var newMessage NewMessage
+	if err := json.NewDecoder(r.Body).Decode(&newMessage); err != nil {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
 
-	message.UserHash = r.Header.Get(config.UserHashHeaderKey)
-	message.CreatedAt = time.Now().Truncate(time.Millisecond) // на фронтенде такой формат времени
+	message := MessageFrom(newMessage, r.Header.Get(config.UserHashHeaderKey))
 	logUserName(message.UserHash, message.UserName)
 
 	messages.RLock()

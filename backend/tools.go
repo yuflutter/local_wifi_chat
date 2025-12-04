@@ -152,7 +152,8 @@ func EnableCORS(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 	} else if origin != "" {
 		// Для других origins тоже разрешаем (для локальной сети)
-		w.Header().Set("Access-Control-Allow-Origin", origin)
+		// w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 	} else {
 		// Если origin не указан, разрешаем все
 		w.Header().Set("Access-Control-Allow-Origin", "*")

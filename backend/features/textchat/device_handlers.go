@@ -1,4 +1,4 @@
-package devices
+package textchat
 
 import (
 	"encoding/json"

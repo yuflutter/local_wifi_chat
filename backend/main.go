@@ -13,7 +13,6 @@ import (
 	"github.com/samber/lo"
 
 	"local-wifi-chat-backend/config"
-	"local-wifi-chat-backend/features/devices"
 	"local-wifi-chat-backend/features/textchat"
 	"local-wifi-chat-backend/features/voiceroom"
 )
@@ -35,7 +34,7 @@ func main() {
 
 	textchat.HandleTextChat("/api/messages", logUserName)
 
-	devices.HandleDevices("/api/devices")
+	textchat.HandleDevices("/api/devices")
 
 	// Инициализировать VoiceRoomHub
 	voiceHub := voiceroom.NewVoiceRoomHub()
