@@ -51,7 +51,7 @@ class _MessageListPageState extends State<MessageListPage> {
               IconButton(
                 icon: Icon(Icons.refresh),
                 tooltip: 'Обновить',
-                onPressed: _refresh,
+                onPressed: _fullRefresh,
               ),
             ],
           ),
@@ -97,17 +97,7 @@ class _MessageListPageState extends State<MessageListPage> {
     );
   }
 
-  Future<void> _refresh() async {
-    setState(() {
-      _initFuture = _model.fetchTop();
-    });
-    // try {
-    //   await _model.fetchTop();
-    // } catch (e) {
-    //   _model.setError(e);
-    // }
-    // if (_scroller.hasClients) {
-    //   _scroller.jumpTo(0);
-    // }
+  void _fullRefresh() async {
+    setState(() => _initFuture = _model.fetchTop());
   }
 }

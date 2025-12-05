@@ -76,6 +76,7 @@ class _AddEditMessageDialogState extends State<AddEditMessageDialog> {
       listenable: widget.model,
       builder: (context, _) {
         return Stack(
+          fit: StackFit.loose,
           children: [
             Form(
               key: _formKey,
@@ -117,14 +118,14 @@ class _AddEditMessageDialogState extends State<AddEditMessageDialog> {
                     ),
 
                     // Reply to message preview
-                    if (message is AddableMessage && message.replyTo != null) ...[
+                    if (message is AddableMessage && message.replyTo != null) ...{
                       spacer,
                       QuoteWidget(
                         userName: message.replyTo!.userName,
                         text: message.replyTo!.quote,
                         onDismiss: widget.model.clearReplyTo,
                       ),
-                    ],
+                    },
                     spacer,
 
                     KeyboardListener(
