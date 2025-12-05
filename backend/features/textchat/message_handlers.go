@@ -118,21 +118,20 @@ func updateMessage(w http.ResponseWriter, r *http.Request, logUserName func(stri
 	}
 	_, i, ok := lo.FindIndexOf(messages.All, func(e Message) bool { return e.Id == newMessage.Id })
 	if !ok {
-		http.Error(w, fmt.Sprintf("%s not found in messages", newMessage), http.StatusNotFound)
+		http.Error(w, fmt.Sprintf("%+v not found in messages", newMessage), http.StatusNotFound)
 		return
 	} else {
-		var m = &messages.All[i]
+		var message = &messages.All[i]
 		userHash := r.Header.Get(config.UserHashHeaderKey)
-		if m.UserHash != userHash {
-			http.Error(w, fmt.Sprintf("%s is not your message", newMessage), http.StatusForbidden)
+		if message.UserHash != userHash {
+			http.Error(w, fmt.Sprintf("%+v is not your message", newMessage), http.StatusForbidden)
 			return
 		}
-		m.UserName = newMessage.UserName
-		m.Text = newMessage.Text
+		message.UpdateFrom(newMessage)
+		logUserName(message.UserHash, message.UserName)
 
-		logUserName(m.UserHash, m.UserName)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(m)
+		json.NewEncoder(w).Encode(message)
 	}
 
 }
