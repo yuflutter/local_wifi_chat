@@ -2,8 +2,8 @@ package textchat
 
 import (
 	"encoding/json"
+	"fmt"
 	"local-wifi-chat-backend/config"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -92,7 +92,7 @@ final:
 }
 
 func addMessage(w http.ResponseWriter, r *http.Request, logUserName func(string, string)) {
-	var newMessage EditableMessage
+	var newMessage NewMessage
 	if err := json.NewDecoder(r.Body).Decode(&newMessage); err != nil {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
@@ -111,24 +111,28 @@ func addMessage(w http.ResponseWriter, r *http.Request, logUserName func(string,
 }
 
 func updateMessage(w http.ResponseWriter, r *http.Request, logUserName func(string, string)) {
-	var newMessage EditableMessage
+	var newMessage NewMessage
 	if err := json.NewDecoder(r.Body).Decode(&newMessage); err != nil {
 		http.Error(w, "Invalid JSON", http.StatusBadRequest)
 		return
 	}
-
-	_, i, ok := lo.FindIndexOf(messages.All, func(e Message) bool {
-		return e.Id == newMessage.Id
-	})
-	if ok {
+	_, i, ok := lo.FindIndexOf(messages.All, func(e Message) bool { return e.Id == newMessage.Id })
+	if !ok {
+		http.Error(w, fmt.Sprintf("%s not found in messages", newMessage), http.StatusNotFound)
+		return
+	} else {
 		var m = &messages.All[i]
+		userHash := r.Header.Get(config.UserHashHeaderKey)
+		if m.UserHash != userHash {
+			http.Error(w, fmt.Sprintf("%s is not your message", newMessage), http.StatusForbidden)
+			return
+		}
 		m.UserName = newMessage.UserName
 		m.Text = newMessage.Text
+
 		logUserName(m.UserHash, m.UserName)
-	} else {
-		log.Printf("%s not found in messages", newMessage)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(m)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
