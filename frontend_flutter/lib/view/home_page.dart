@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:local_wifi_chat_frontend/features/text_chat/view/chat_page.dart';
 import 'package:local_wifi_chat_frontend/features/text_chat/view/device_list_page.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/view/message_list_page.dart';
 import 'package:local_wifi_chat_frontend/features/voice_room/view/audio_page.dart';
-import 'settings_page.dart';
+import 'package:local_wifi_chat_frontend/view/settings_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,7 +12,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final _pages = const [MessageListPage(), AudioPage(), DeviceListPage(), SettingsPage()];
+  final _pages = const [ChatPage(), AudioPage(), DeviceListPage(), SettingsPage()];
   int _currentIndex = 0;
 
   @override
@@ -21,7 +21,6 @@ class _HomePageState extends State<HomePage> {
       builder: (context, constraints) {
         final isLandscape = constraints.maxWidth > constraints.maxHeight;
         if (isLandscape) {
-          // Landscape orientation: NavigationRail on the left
           return Scaffold(
             body: Row(
               children: [
@@ -45,7 +44,6 @@ class _HomePageState extends State<HomePage> {
             ),
           );
         } else {
-          // Portrait orientation: BottomNavigationBar at the bottom
           return Scaffold(
             body: _pages[_currentIndex],
             bottomNavigationBar: BottomNavigationBar(

@@ -28,26 +28,6 @@ class Message {
   factory Message.fromJsonStr(String str) => Message.fromJson(json.decode(str));
 }
 
-/// Ответ на...
-class ReplyTo {
-  final String messageId;
-  final String userName;
-  final String quote;
-
-  ReplyTo({required this.messageId, required this.userName, required this.quote});
-
-  ReplyTo.fromJson(Map<String, dynamic> json)
-    : messageId = json['messageId'],
-      userName = json['userName'],
-      quote = json['quote'];
-
-  Map<String, dynamic> toJson() => {
-    'messageId': messageId,
-    'userName': userName,
-    'quote': quote,
-  };
-}
-
 /// Приходит с бэкенда, отсортирован в обратном порядке — от новых к старым (новые в начале списка, старые в хвосте).
 /// Однако в виджете список отображается наоборот — новые внизу экрана, старые вверху.
 /// Но отображение в виджете не влияет на порядок в самом списке. Виджет делает реверс на лету.
@@ -61,13 +41,13 @@ class MessageList {
 }
 
 /// Создаётся|редактируется пользователем, уходит на бекенд.
-abstract class NewMessage implements Disposable {
+abstract class AddEditMessage implements Disposable {
   final StringField userName;
   final StringField text;
 
-  NewMessage({String? userName, String? text})
+  AddEditMessage({String? userName, String? text})
     : userName = StringField(label: 'Ваше имя', hint: 'Ваше имя', value: userName),
-      text = StringField(label: 'Текст', hint: 'Текст сообщения', value: text) {
+      text = StringField(label: null, hint: 'Текст сообщения', value: text) {
     this.userName.validator = this.userName.emptyStringValidator;
     this.text.validator = this.text.emptyStringValidator;
   }
@@ -84,7 +64,7 @@ abstract class NewMessage implements Disposable {
 }
 
 /// Добавляется новое, опционально - через ответ на...
-class AddableMessage extends NewMessage {
+class AddableMessage extends AddEditMessage {
   ReplyTo? replyTo;
 
   AddableMessage({Message? replyToMessage, String? replyToQuote})
@@ -106,7 +86,7 @@ class AddableMessage extends NewMessage {
 }
 
 /// Редактируется существующее, ответ на... не редактируется.
-class EditableMessage extends NewMessage {
+class EditableMessage extends AddEditMessage {
   final String? id;
 
   EditableMessage({required Message message}) : id = message.id, super(userName: message.userName, text: message.text);
@@ -116,6 +96,26 @@ class EditableMessage extends NewMessage {
     'id': id,
     'userName': userName.value,
     'text': text.value,
+  };
+}
+
+/// Ответ на...
+class ReplyTo {
+  final String messageId;
+  final String userName;
+  final String quote;
+
+  ReplyTo({required this.messageId, required this.userName, required this.quote});
+
+  ReplyTo.fromJson(Map<String, dynamic> json)
+    : messageId = json['messageId'],
+      userName = json['userName'],
+      quote = json['quote'];
+
+  Map<String, dynamic> toJson() => {
+    'messageId': messageId,
+    'userName': userName,
+    'quote': quote,
   };
 }
 

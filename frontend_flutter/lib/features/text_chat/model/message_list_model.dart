@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'package:flutter/widgets.dart';
 import 'package:local_wifi_chat_frontend/app_config.dart';
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/core/logger.dart';
-import 'package:local_wifi_chat_frontend/model/one_time_event.dart';
 import 'package:local_wifi_chat_frontend/features/text_chat/model/messages.dart';
 import 'package:local_wifi_chat_frontend/model/abstract_model.dart';
 
@@ -14,25 +14,27 @@ class MessageListModel extends AbstractModel {
 
   /// Имеются новые непрочитанные, используется для показа кнопки "вниз"
   var _existsUnread = false;
+  bool get existsUnread => _existsUnread;
 
-  /// Флаг принудительного скролла в начало списка (то есть в низ экрана)
-  var forceScrollToTop = OneTimeEvent(false);
+  /// Контроллер для отслеживания прочитанных / непрочитанных
+  late final ScrollController scrollController = ScrollController()
+    ..addListener(() {
+      if (scrollController.position.pixels < 10) {
+        _existsUnread = false;
+        notifyListeners();
+      }
+    });
 
+  final AbstractMessagesRepository _repository;
   Timer? _refreshTimer;
 
-  MessageListModel({super.errorPresenter});
+  MessageListModel({super.errorPresenter, AbstractMessagesRepository? replsitory})
+    : _repository = replsitory ?? di<AbstractMessagesRepository>();
 
   @override
   void dispose() {
     _refreshTimer?.cancel();
     super.dispose();
-  }
-
-  bool get existsUnread => _existsUnread;
-
-  void clearExistsUnread() {
-    _existsUnread = false;
-    notifyListeners();
   }
 
   /// Для первого fetch() ошибку обрабатываем иначе, чем для остальных фоновых запросов,
@@ -59,18 +61,19 @@ class MessageListModel extends AbstractModel {
   Future<void> fetchNewer() => _fetch(_FetchMode.newer);
 
   Future<void> _fetch(_FetchMode fetchMode, {bool noPresentError = false}) async {
-    final repository = di<AbstractMessagesRepository>();
     final defaultLimit = di<AppConfig>().fetchBatchSize;
     try {
+      // await Future.delayed(Duration(seconds: 2));
+      // throw Exception('Testing adding new message error');
       switch (fetchMode) {
         case _FetchMode.top:
-          final bath = await repository.fetch(limit: defaultLimit);
+          final bath = await _repository.fetch(limit: defaultLimit);
           log.info(null, "Top batch loaded: ${bath.all.length} items");
           list = bath;
-          forceScrollToTop = OneTimeEvent(true);
+        // _isScrollToTop = OneTimeFlag(true);
 
         case _FetchMode.older:
-          final bath = await repository.fetch(
+          final bath = await _repository.fetch(
             olderThan: list.all.lastOrNull,
             limit: defaultLimit,
           );
@@ -83,14 +86,16 @@ class MessageListModel extends AbstractModel {
           );
 
         case _FetchMode.newer:
-          final bath = await repository.fetch(
+          final bath = await _repository.fetch(
             newerThan: list.all.firstOrNull,
             limit: 0,
             noLog: true,
           );
           if (bath.all.isNotEmpty) {
             log.info(null, "Batch of newer loaded: ${bath.all.length} items");
-            _existsUnread = true;
+            if (scrollController.hasClients && scrollController.position.pixels > 10) {
+              _existsUnread = true;
+            }
           }
           list = MessageList(
             all: bath.all + list.all,

@@ -11,3 +11,17 @@ class OneTimeEvent<T> {
     return old;
   }
 }
+
+class OneTimeFlag {
+  OneTimeFlag(this._value);
+
+  bool _value;
+
+  bool get read => _value;
+
+  bool get value {
+    final old = _value;
+    _value = false;
+    return old;
+  }
+}
