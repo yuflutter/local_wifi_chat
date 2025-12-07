@@ -1,0 +1,59 @@
+# ===== Backend Go =====
+backend_go/local-wifi-chat-backend
+backend_go/*.exe
+backend_go/*.exe~
+backend_go/*.dll
+backend_go/*.so
+backend_go/*.dylib
+backend_go/*.test
+backend_go/*.out
+backend_go/go.work
+backend_go/frontend_bundle/
+
+# ===== Frontend Compose (Kotlin/Gradle) =====
+frontend_compose/.gradle
+frontend_compose/build/
+!frontend_compose/gradle/wrapper/gradle-wrapper.jar
+!frontend_compose/**/src/main/**/build/
+!frontend_compose/**/src/test/**/build/
+frontend_compose/kotlin-js-store/
+!frontend_compose/kotlin-js-store/yarn.lock
+
+# ===== Frontend Flutter =====
+frontend_flutter/*.class
+frontend_flutter/*.log
+frontend_flutter/*.pyc
+frontend_flutter/*.swp
+frontend_flutter/.atom/
+frontend_flutter/.build/
+frontend_flutter/.buildlog/
+frontend_flutter/.history
+frontend_flutter/.svn/
+frontend_flutter/.swiftpm/
+frontend_flutter/migrate_working_dir/
+frontend_flutter/**/doc/api/
+frontend_flutter/**/ios/Flutter/.last_build_id
+frontend_flutter/.dart_tool/
+frontend_flutter/.flutter-plugins-dependencies
+frontend_flutter/.pub-cache/
+frontend_flutter/.pub/
+frontend_flutter/build/
+frontend_flutter/coverage/
+frontend_flutter/app.*.symbols
+frontend_flutter/app.*.map.json
+frontend_flutter/android/app/debug
+frontend_flutter/android/app/profile
+frontend_flutter/android/app/release
+
+# ===== IntelliJ IDEA =====
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+
+# ===== VS Code =====
+.vscode/
+
+# ===== Mac OS =====
+.DS_Store

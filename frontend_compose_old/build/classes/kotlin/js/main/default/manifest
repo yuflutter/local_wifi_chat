@@ -1,0 +1,10 @@
+abi_version=1.8.0
+builtins_platform=JS
+compiler_version=1.9.20
+depends=org.jetbrains.kotlinx\:kotlinx-collections-immutable io.ktor\:ktor-serialization-kotlinx-json org.jetbrains.kotlinx\:kotlinx-serialization-json org.jetbrains.kotlinx\:kotlinx-datetime io.ktor\:ktor-serialization-kotlinx org.jetbrains.kotlinx\:kotlinx-serialization-core org.jetbrains.kotlin\:kotlin-dom-api-compat org.jetbrains.compose.html\:html-core org.jetbrains.compose.html\:internal-html-core-runtime io.ktor\:ktor-client-js io.ktor\:ktor-client-content-negotiation org.jetbrains.compose.runtime\:runtime io.ktor\:ktor-client-core io.ktor\:ktor-events io.ktor\:ktor-websocket-serialization io.ktor\:ktor-serialization io.ktor\:ktor-websockets io.ktor\:ktor-http io.ktor\:ktor-utils io.ktor\:ktor-io org.jetbrains.kotlinx\:kotlinx-coroutines-core org.jetbrains.kotlinx\:atomicfu kotlin org.jetbrains.kotlin\:kotlinx-atomicfu-runtime
+ir_signature_versions=1,2
+jsOutputName=local-wifi-chat-frontend
+metadata_version=1.4.1
+serializedIrFileFingerprints=2g0tupfc9zgzq.2nw23157pjo3m 2gzj9or7czuo4.16v8ixo4sg7mi 7vqswr2alnxb.2377fh25oq6ow 3cxrhvpcesh8f.22hjbjl5forw 2we06xbar7ccp.1ksh5lj0v4ns4 3k9wxhh8pqdpo.3m6uhudwr9s57 pi41s4cmvdjq.1n3r6gum0d6xl 1lqsc9db6wk5n.3rj93s4t9t3v0 v1rc4m9ybrxg.3qj3gvhyaed9 xs6ryuvhtk6u.1krbxq3fi33p7 3q1vcc8m99rmw.367mw9ogyxe20 10xhf7bmkxvie.1kqt09l67mx9v 3m3vpji8ugltb.2uqltfgyylfm6 2548isi4ptz1m.3qoh2rjp5xi2i 2mxqsscgqm2yi.v71o1f8zw4s3 w11z0ji61d0u.1s5qe7kpbrlkv 120j0ude2g0tk.2t4au9jzkhhek 2pi0vfqw5qj10.31ha8rjpt2gb2 28aqb64jnomwl.d4myq3cbcv0u 3qu6rsmknvbx8.3fhefxoopx1zr 3g7bupwjqdame.2mw6usrr2ff6s 2rfzxw6lh6l0b.ep09pwd03ehm 22ref2qck2ssl.a1ea8ghdd9dh 3rz81agp474xt.2a7sutw95wfg8
+serializedKlibFingerprint=1jxumkrrevh7c.ux8vtx99rg2e
+unique_name=com.example\:local-wifi-chat-frontend

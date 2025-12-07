@@ -1,0 +1,23 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" fill="#7F52FF" rx="80"/>
+  
+  <!-- Kotlin K shape -->
+  <g transform="translate(80, 80)">
+    <!-- Left vertical bar -->
+    <polygon points="0,0 60,0 60,352 0,352" fill="#FFFFFF"/>
+    
+    <!-- Top diagonal -->
+    <polygon points="60,0 352,0 60,176" fill="#FFFFFF"/>
+    
+    <!-- Bottom diagonal -->
+    <polygon points="60,176 352,352 60,352" fill="#FFFFFF"/>
+  </g>
+  
+  <!-- Chat bubble accent -->
+  <g transform="translate(340, 340)">
+    <circle cx="40" cy="40" r="50" fill="#00D9FF" opacity="0.9"/>
+    <circle cx="35" cy="35" r="35" fill="#FFFFFF"/>
+    <text x="35" y="50" font-family="Arial, sans-serif" font-size="40" font-weight="bold" text-anchor="middle" fill="#7F52FF">💬</text>
+  </g>
+</svg>
