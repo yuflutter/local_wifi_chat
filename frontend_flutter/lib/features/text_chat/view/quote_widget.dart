@@ -13,7 +13,7 @@ class QuoteWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(15, 8, 12, 10),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
+        color: theme.colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(8),
         border: Border(
           left: BorderSide(color: theme.colorScheme.primary, width: 3),

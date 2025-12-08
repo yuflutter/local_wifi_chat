@@ -20,6 +20,7 @@ class _MessageListTileState extends State<MessageListTile> {
   @override
   Widget build(BuildContext context) {
     final isMine = widget.message.isMine;
+    final theme = Theme.of(context);
 
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
@@ -27,7 +28,7 @@ class _MessageListTileState extends State<MessageListTile> {
         constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * (isMine ? 0.8 : 1)),
         child: Card(
           margin: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-          color: isMine ? Colors.brown : null, // Цвет как в Telegram для моих сообщений
+          color: isMine ? Colors.brown : theme.highlightColor, // Цвет как в Telegram для моих сообщений
           child: Padding(
             padding: const EdgeInsets.all(12.0),
             child: Column(
@@ -35,16 +36,66 @@ class _MessageListTileState extends State<MessageListTile> {
               children: [
                 Row(
                   children: [
-                    Text(
-                      widget.message.userName,
-                      style: TextStyle(fontWeight: FontWeight.bold, color: isMine ? Colors.white : null),
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                widget.message.userName,
+                                style: TextStyle(fontWeight: FontWeight.bold, color: isMine ? Colors.white : null),
+                              ),
+                              Spacer(),
+                              Text(
+                                _dateFormat.format(widget.message.createdAt.toLocal()),
+                                style: TextStyle(fontSize: 12, color: isMine ? Colors.white70 : Colors.grey[600]),
+                              ),
+                            ],
+                          ),
+                          if (_selectedText.isNotEmpty) ...{
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.format_quote,
+                                    size: 14,
+                                    color: Colors.black,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      _selectedText.replaceAll('\n', ' / '),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.black,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  InkWell(
+                                    onTap: () => setState(() => _selectedText = ''),
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 14,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          },
+                        ],
+                      ),
                     ),
-                    Spacer(),
-                    Text(
-                      _dateFormat.format(widget.message.createdAt.toLocal()),
-                      style: TextStyle(fontSize: 12, color: isMine ? Colors.white70 : Colors.grey[600]),
-                    ),
-                    SizedBox(width: 5),
+                    SizedBox(width: 10),
                     PopupMenuButton(
                       itemBuilder: (context) {
                         final hasSelection = _selectedText.isNotEmpty;
@@ -66,6 +117,7 @@ class _MessageListTileState extends State<MessageListTile> {
                     ),
                   ],
                 ),
+                SizedBox(height: 5),
                 if (widget.message.replyTo != null) ...[
                   Padding(
                     padding: const EdgeInsets.fromLTRB(0, 5, 0, 6),
@@ -80,47 +132,6 @@ class _MessageListTileState extends State<MessageListTile> {
                     setState(() => _selectedText = selection.textInside(widget.message.text));
                   },
                 ),
-                if (_selectedText.isNotEmpty) ...{
-                  SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: isMine ? Colors.white.withValues(alpha: 0.2) : Colors.blue.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.format_quote,
-                          size: 14,
-                          color: isMine ? Colors.white70 : Colors.blue,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            _selectedText.replaceAll('\n', ' / '),
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: isMine ? Colors.white70 : Colors.blue,
-                              fontStyle: FontStyle.italic,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        InkWell(
-                          onTap: () => setState(() => _selectedText = ''),
-                          child: Icon(
-                            Icons.close,
-                            size: 14,
-                            color: isMine ? Colors.white70 : Colors.blue,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                },
               ],
             ),
           ),

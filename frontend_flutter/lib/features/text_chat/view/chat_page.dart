@@ -76,7 +76,7 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                   floatingActionButton: (_listModel.existsUnread)
                       ? Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 45),
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 52),
                           child: FloatingActionButton(
                             onPressed: () => _listModel.scrollController.jumpTo(0),
                             backgroundColor: Colors.red,

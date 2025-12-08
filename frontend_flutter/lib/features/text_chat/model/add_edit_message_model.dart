@@ -60,7 +60,8 @@ class AddEditMessageModel extends AbstractModel {
         : null;
     isFormExpanded = true;
     notifyListeners();
-    await Future(() {}); // сначала показат всю форму, и только в следующем тике поставить фокус
+    // сначала показать всю форму, и только в следующем тике поставить фокус
+    await Future.delayed(Duration(milliseconds: 100));
     if (userName.value?.isEmpty ?? true) {
       userNameFocusNode.requestFocus();
     } else {
@@ -75,7 +76,8 @@ class AddEditMessageModel extends AbstractModel {
     text.controller.text = messageToEdit?.text ?? '';
     isFormExpanded = true;
     notifyListeners();
-    await Future(() {}); // сначала показат всю форму, и только в следующем тике поставить фокус
+    // сначала показать всю форму, и только в следующем тике поставить фокус
+    await Future.delayed(Duration(milliseconds: 100));
     if (userName.value?.isEmpty ?? true) {
       userNameFocusNode.requestFocus();
     } else {
@@ -92,6 +94,7 @@ class AddEditMessageModel extends AbstractModel {
 
   Future<void> save() async {
     if (validate()) {
+      textFocusNode.unfocus(); // иначе после закрытия оверлея фокус вернется, и форма опять откроется
       final addEditMessage = AddEditMessage(userName: userName.value!, text: text.value!, id: id, replyTo: replyTo);
       startWaiting();
       try {
