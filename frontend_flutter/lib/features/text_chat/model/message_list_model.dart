@@ -9,6 +9,8 @@ import 'package:local_wifi_chat_frontend/model/abstract_model.dart';
 enum _FetchMode { top, older, newer }
 
 class MessageListModel extends AbstractModel {
+  final AbstractMessagesRepository _repository;
+
   /// Тут список сообщений
   var list = MessageList.empty();
 
@@ -25,7 +27,6 @@ class MessageListModel extends AbstractModel {
       }
     });
 
-  final AbstractMessagesRepository _repository;
   Timer? _refreshTimer;
 
   MessageListModel({super.errorPresenter, AbstractMessagesRepository? replsitory})

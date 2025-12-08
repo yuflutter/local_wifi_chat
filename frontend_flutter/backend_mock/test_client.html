@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Room Test Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button {
+            padding: 12px 24px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .participants {
+            margin-top: 20px;
+        }
+        .participant {
+            padding: 15px;
+            margin: 10px 0;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .participant.muted {
+            border-left-color: #dc3545;
+        }
+        .log {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+        }
+        .log-entry.info {
+            color: #007bff;
+        }
+        .log-entry.error {
+            color: #dc3545;
+        }
+        .log-entry.success {
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎙️ Audio Room Test Client</h1>
+        
+        <div class="form-group">
+            <label>WebSocket URL:</label>
+            <input type="text" id="wsUrl" value="ws://localhost:8080/audio">
+        </div>
+        
+        <div class="form-group">
+            <label>Ваше имя:</label>
+            <input type="text" id="userName" placeholder="Введите имя">
+        </div>
+        
+        <div>
+            <button class="btn-primary" onclick="connect()">Подключиться</button>
+            <button class="btn-danger" onclick="disconnect()">Отключиться</button>
+            <button class="btn-success" onclick="toggleMic()">Включить/Выключить микрофон</button>
+        </div>
+        
+        <div id="status" class="status disconnected">Отключено</div>
+        
+        <div class="participants">
+            <h3>Участники:</h3>
+            <div id="participantsList"></div>
+        </div>
+        
+        <div class="log">
+            <h3>Лог:</h3>
+            <div id="logEntries"></div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let userId = null;
+        let isMicEnabled = false;
+        let mediaRecorder = null;
+        let audioContext = null;
+        let participants = [];
+
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('logEntries');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function updateStatus(connected) {
+            const statusDiv = document.getElementById('status');
+            if (connected) {
+                statusDiv.className = 'status connected';
+                statusDiv.textContent = 'Подключено';
+            } else {
+                statusDiv.className = 'status disconnected';
+                statusDiv.textContent = 'Отключено';
+            }
+        }
+
+        function updateParticipants() {
+            const listDiv = document.getElementById('participantsList');
+            listDiv.innerHTML = '';
+            
+            participants.forEach(p => {
+                const div = document.createElement('div');
+                div.className = `participant ${p.isMuted ? 'muted' : ''}`;
+                div.innerHTML = `
+                    <strong>${p.name}</strong> ${p.id === userId ? '(Вы)' : ''}
+                    <br>
+                    <small>
+                        ${p.isMuted ? '🔇 Микрофон выключен' : '🎤 Микрофон включен'}
+                        | Громкость: ${Math.round(p.volume * 100)}%
+                    </small>
+                `;
+                listDiv.appendChild(div);
+            });
+        }
+
+        function connect() {
+            const url = document.getElementById('wsUrl').value;
+            const name = document.getElementById('userName').value;
+            
+            if (!name) {
+                alert('Введите имя!');
+                return;
+            }
+            
+            userId = Date.now().toString();
+            
+            try {
+                ws = new WebSocket(url);
+                
+                ws.onopen = () => {
+                    log('WebSocket соединение установлено', 'success');
+                    updateStatus(true);
+                    
+                    // Отправляем информацию о подключении
+                    const joinMsg = {
+                        type: 'metadata',
+                        data: {
+                            action: 'join',
+                            userId: userId,
+                            userName: name
+                        }
+                    };
+                    ws.send(JSON.stringify(joinMsg));
+                    log(`Отправлено сообщение join: ${name}`, 'info');
+                };
+                
+                ws.onmessage = (event) => {
+                    if (typeof event.data === 'string') {
+                        const msg = JSON.parse(event.data);
+                        log(`Получено: ${msg.type}`, 'info');
+                        
+                        if (msg.type === 'metadata' && msg.data.participants) {
+                            participants = msg.data.participants;
+                            updateParticipants();
+                            log(`Обновлен список участников: ${participants.length}`, 'success');
+                        }
+                    } else {
+                        // Binary audio data
+                        log('Получен аудио чанк', 'info');
+                        playAudioChunk(event.data);
+                    }
+                };
+                
+                ws.onerror = (error) => {
+                    log(`Ошибка WebSocket: ${error}`, 'error');
+                };
+                
+                ws.onclose = () => {
+                    log('WebSocket соединение закрыто', 'error');
+                    updateStatus(false);
+                    ws = null;
+                };
+                
+            } catch (error) {
+                log(`Ошибка подключения: ${error}`, 'error');
+            }
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+            }
+            isMicEnabled = false;
+            updateStatus(false);
+            log('Отключено', 'info');
+        }
+
+        async function toggleMic() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                alert('Сначала подключитесь к серверу!');
+                return;
+            }
+            
+            if (isMicEnabled) {
+                // Выключаем микрофон
+                if (mediaRecorder) {
+                    mediaRecorder.stop();
+                    mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                }
+                isMicEnabled = false;
+                
+                // Уведомляем сервер
+                ws.send(JSON.stringify({
+                    type: 'participant_update',
+                    data: {
+                        userId: userId,
+                        isMuted: true
+                    }
+                }));
+                
+                log('Микрофон выключен', 'info');
+            } else {
+                // Включаем микрофон
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true
+                        }
+                    });
+                    
+                    mediaRecorder = new MediaRecorder(stream, {
+                        mimeType: 'audio/webm;codecs=opus'
+                    });
+                    
+                    mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0 && ws && ws.readyState === WebSocket.OPEN) {
+                            // Читаем blob и отправляем
+                            event.data.arrayBuffer().then(buffer => {
+                                const userIdBytes = new TextEncoder().encode(userId.padEnd(36, ' '));
+                                const audioBytes = new Uint8Array(buffer);
+                                const combined = new Uint8Array(userIdBytes.length + audioBytes.length);
+                                combined.set(userIdBytes, 0);
+                                combined.set(audioBytes, userIdBytes.length);
+                                ws.send(combined);
+                            });
+                        }
+                    };
+                    
+                    mediaRecorder.start(100); // Чанки по 100ms
+                    isMicEnabled = true;
+                    
+                    // Уведомляем сервер
+                    ws.send(JSON.stringify({
+                        type: 'participant_update',
+                        data: {
+                            userId: userId,
+                            isMuted: false
+                        }
+                    }));
+                    
+                    log('Микрофон включен', 'success');
+                } catch (error) {
+                    log(`Ошибка доступа к микрофону: ${error}`, 'error');
+                }
+            }
+        }
+
+        function playAudioChunk(data) {
+            // Простое воспроизведение через Audio element
+            const blob = new Blob([data.slice(36)], { type: 'audio/webm' });
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+            audio.play().catch(e => {
+                // Игнорируем ошибки воспроизведения
+            });
+            audio.onended = () => URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

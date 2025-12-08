@@ -1,5 +1,4 @@
 import 'package:local_wifi_chat_frontend/core/di.dart';
-import 'package:local_wifi_chat_frontend/core/logger.dart';
 import 'package:local_wifi_chat_frontend/data/api_client.dart';
 import 'package:local_wifi_chat_frontend/features/text_chat/data/devices_repository.dart';
 import 'package:local_wifi_chat_frontend/features/text_chat/data/messages_repository.dart';
@@ -16,8 +15,7 @@ class DebugConfig extends AppConfig {
 
   @override
   Future<void> init() async {
-    // await Future.delayed(Duration(seconds: 1));
-    // throw "Testing AppConfig initialization error";
+    // throw "Тест ошибки инициализации приложения";
   }
 }
 
@@ -37,7 +35,6 @@ Future<void> initApp() async {
     _ => throw 'Undefined FLAVOR = $_flavor',
   };
 
-  await DI.putAndInit(InMemoryLogger(storeUpToEntries: 100));
   await DI.putAndInit(config);
   await DI.putAndInit(UserSession());
   await DI.putAndInit(
