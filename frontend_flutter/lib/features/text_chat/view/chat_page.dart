@@ -59,14 +59,16 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                   body: Padding(
                     padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                    child: Stack(
+                      fit: StackFit.loose,
+                      alignment: AlignmentDirectional.bottomCenter,
                       children: [
-                        Expanded(
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 60),
                           child: MessageListWidget(),
                         ),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 8, 0, 0),
+                          padding: const EdgeInsets.fromLTRB(0, 0, 0, 4),
                           child: AddEditMessageForm(),
                         ),
                       ],

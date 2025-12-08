@@ -26,7 +26,7 @@ class MessagesRepository extends AbstractMessagesRepository {
   }
 
   @override
-  Future<void> add(AddableMessage newMessage) {
+  Future<void> add(AddEditMessage newMessage) {
     return _api.post<Null>(
       'messages',
       body: newMessage.toJsonStr(),
@@ -35,7 +35,7 @@ class MessagesRepository extends AbstractMessagesRepository {
   }
 
   @override
-  Future<Message> edit(EditableMessage newMessage) {
+  Future<Message> edit(AddEditMessage newMessage) {
     return _api.put<Message>(
       'messages',
       body: newMessage.toJsonStr(),

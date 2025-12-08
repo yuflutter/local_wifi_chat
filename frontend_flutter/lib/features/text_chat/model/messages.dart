@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/core/scope_fun.dart';
-import 'package:local_wifi_chat_frontend/model/field.dart';
 import 'package:local_wifi_chat_frontend/user_session.dart';
 
 /// Приходит с бекенда
@@ -40,63 +39,23 @@ class MessageList {
   MessageList.empty() : all = [], isOlderAvailable = false;
 }
 
-/// Создаётся|редактируется пользователем, уходит на бекенд.
-abstract class AddEditMessage implements Disposable {
-  final StringField userName;
-  final StringField text;
+/// Создаётся | редактируется пользователем, уходит на бекенд.
+class AddEditMessage {
+  final String userName;
+  final String text;
+  final String? id;
+  final ReplyTo? replyTo;
 
-  AddEditMessage({String? userName, String? text})
-    : userName = StringField(label: 'Ваше имя', hint: 'Ваше имя', value: userName),
-      text = StringField(label: null, hint: 'Текст сообщения', value: text) {
-    this.userName.validator = this.userName.emptyStringValidator;
-    this.text.validator = this.text.emptyStringValidator;
-  }
+  AddEditMessage({required this.userName, required this.text, this.id, this.replyTo});
 
-  Map<String, dynamic> toJson();
+  Map<String, dynamic> toJson() => {
+    'userName': userName,
+    'text': text,
+    'id': id,
+    'replyTo': replyTo?.toJson(),
+  };
 
   String toJsonStr() => json.encode(toJson());
-
-  @override
-  void dispose() {
-    userName.dispose();
-    text.dispose();
-  }
-}
-
-/// Добавляется новое, опционально - через ответ на...
-class AddableMessage extends AddEditMessage {
-  ReplyTo? replyTo;
-
-  AddableMessage({Message? replyToMessage, String? replyToQuote})
-    : replyTo = (replyToMessage != null)
-          ? ReplyTo(messageId: replyToMessage.id, userName: replyToMessage.userName, quote: replyToQuote!)
-          : null,
-      super(userName: di<UserSession>().userName);
-
-  void clearReplyTo() {
-    replyTo = null;
-  }
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'replyTo': replyTo?.toJson(),
-    'userName': userName.value,
-    'text': text.value,
-  };
-}
-
-/// Редактируется существующее, ответ на... не редактируется.
-class EditableMessage extends AddEditMessage {
-  final String? id;
-
-  EditableMessage({required Message message}) : id = message.id, super(userName: message.userName, text: message.text);
-
-  @override
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'userName': userName.value,
-    'text': text.value,
-  };
 }
 
 /// Ответ на...
@@ -123,7 +82,7 @@ class ReplyTo {
 abstract class AbstractMessagesRepository {
   Future<MessageList> fetch({Message? olderThan, Message? newerThan, required int limit, bool noLog = false});
 
-  Future<void> add(AddableMessage newMessage);
+  Future<void> add(AddEditMessage newMessage);
 
-  Future<Message> edit(EditableMessage newMessage);
+  Future<Message> edit(AddEditMessage newMessage);
 }

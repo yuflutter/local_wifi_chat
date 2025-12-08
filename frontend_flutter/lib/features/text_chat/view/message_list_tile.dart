@@ -6,9 +6,9 @@ import 'package:local_wifi_chat_frontend/features/text_chat/view/quote_widget.da
 import 'package:provider/provider.dart';
 
 class MessageListTile extends StatefulWidget {
-  const MessageListTile({super.key, required this.message});
-
   final Message message;
+
+  const MessageListTile({super.key, required this.message});
 
   @override
   State<MessageListTile> createState() => _MessageListTileState();
@@ -130,7 +130,7 @@ class _MessageListTileState extends State<MessageListTile> {
   }
 
   void _reply(BuildContext context, {String? quote}) {
-    context.read<AddEditMessageModel>().initAddable(
+    context.read<AddEditMessageModel>().startAdding(
       replyToMessage: widget.message,
       replyToQuote: quote ?? widget.message.text,
     );
@@ -138,7 +138,7 @@ class _MessageListTileState extends State<MessageListTile> {
   }
 
   void _edit(BuildContext context) {
-    context.read<AddEditMessageModel>().initEditable(
+    context.read<AddEditMessageModel>().startEditing(
       messageToEdit: widget.message,
     );
     setState(() => _selectedText = '');
