@@ -61,10 +61,18 @@ class _MessageListTileState extends State<MessageListTile> {
                               ),
                               child: Row(
                                 children: [
-                                  Icon(
-                                    Icons.format_quote,
-                                    size: 14,
-                                    color: Colors.black,
+                                  // Icon(
+                                  //   Icons.format_quote,
+                                  //   size: 14,
+                                  //   color: Colors.black,
+                                  // ),
+                                  InkWell(
+                                    onTap: () => setState(() => _selectedText = ''),
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 14,
+                                      color: Colors.black,
+                                    ),
                                   ),
                                   const SizedBox(width: 4),
                                   Expanded(
@@ -80,14 +88,6 @@ class _MessageListTileState extends State<MessageListTile> {
                                     ),
                                   ),
                                   const SizedBox(width: 4),
-                                  InkWell(
-                                    onTap: () => setState(() => _selectedText = ''),
-                                    child: Icon(
-                                      Icons.close,
-                                      size: 14,
-                                      color: Colors.black,
-                                    ),
-                                  ),
                                 ],
                               ),
                             ),
