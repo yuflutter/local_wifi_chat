@@ -27,6 +27,8 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
+        visualDensity: VisualDensity.compact,
+
         fontFamily: 'Roboto',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.red, brightness: Brightness.dark),
 
