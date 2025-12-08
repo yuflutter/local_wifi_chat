@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:local_wifi_chat_frontend/core/logger.dart';
 
-import '../../view/core/error_widgets.dart';
+import '../../view/core/error_log_widget.dart';
 import 'abstract_crud_model.dart';
 
 /// A list widget, that implements CRUD
@@ -51,7 +51,7 @@ class _CrudListWidgetState<T, Tnew> extends State<CrudListWidget<T, Tnew>> {
     final list = model.displayed;
     if (model.isFetchError) {
       WidgetsBinding.instance.addPostFrameCallback(
-        (_) => showErrorLogPopup(
+        (_) => showErrorLogWidget(
           context,
           error: log.error('Error loading the list', model.fetchError!, model.fetchErrorStack),
         ),

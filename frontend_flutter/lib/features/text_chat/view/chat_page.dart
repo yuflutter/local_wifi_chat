@@ -5,7 +5,7 @@ import 'package:local_wifi_chat_frontend/features/text_chat/model/add_edit_messa
 import 'package:local_wifi_chat_frontend/features/text_chat/model/message_list_model.dart';
 import 'package:local_wifi_chat_frontend/features/text_chat/view/add_edit_message_form.dart';
 import 'package:local_wifi_chat_frontend/features/text_chat/view/message_list_widget.dart';
-import 'package:local_wifi_chat_frontend/view/core/error_widgets.dart';
+import 'package:local_wifi_chat_frontend/view/core/error_log_widget.dart';
 import 'package:local_wifi_chat_frontend/view/core/simple_future_builder.dart';
 import 'package:provider/provider.dart';
 
@@ -29,7 +29,7 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _errorPresenter(Object e, StackTrace? s) => WidgetsBinding.instance.addPostFrameCallback(
-    (_) => showErrorLogPopup(context, error: e, stack: s),
+    (_) => showErrorLogWidget(context, error: e, stack: s),
   );
 
   @override

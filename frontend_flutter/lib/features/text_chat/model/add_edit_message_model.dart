@@ -16,12 +16,11 @@ class AddEditMessageModel extends AbstractModel {
   ReplyTo? replyTo;
 
   var isFormExpanded = false;
+  final formKey = GlobalKey<FormState>();
+
+  final FocusNode userNameFocusNode = FocusNode();
   late final FocusNode textFocusNode = FocusNode()
-    ..addListener(() {
-      if (textFocusNode.hasFocus && !isFormExpanded) {
-        startAdding();
-      }
-    });
+    ..addListener(() => (textFocusNode.hasFocus && !isFormExpanded) ? startAdding() : null);
 
   AddEditMessageModel({
     super.errorPresenter,
@@ -40,6 +39,7 @@ class AddEditMessageModel extends AbstractModel {
   }
 
   void clearForm() {
+    formKey.currentState?.reset();
     _clearForm();
     textFocusNode.unfocus();
     isFormExpanded = false;
@@ -53,24 +53,34 @@ class AddEditMessageModel extends AbstractModel {
     super.dispose();
   }
 
-  void startAdding({Message? replyToMessage, String? replyToQuote}) {
+  void startAdding({Message? replyToMessage, String? replyToQuote}) async {
     _clearForm();
     replyTo = (replyToMessage != null)
         ? ReplyTo(messageId: replyToMessage.id, userName: replyToMessage.userName, quote: replyToQuote!)
         : null;
     isFormExpanded = true;
-    textFocusNode.requestFocus();
     notifyListeners();
+    await Future(() {}); // сначала показат всю форму, и только в следующем тике поставить фокус
+    if (userName.value?.isEmpty ?? true) {
+      userNameFocusNode.requestFocus();
+    } else {
+      textFocusNode.requestFocus();
+    }
   }
 
-  void startEditing({Message? messageToEdit}) {
+  void startEditing({Message? messageToEdit}) async {
     _clearForm();
     id = messageToEdit?.id;
     userName.controller.text = messageToEdit?.userName ?? '';
     text.controller.text = messageToEdit?.text ?? '';
-    textFocusNode.requestFocus();
     isFormExpanded = true;
     notifyListeners();
+    await Future(() {}); // сначала показат всю форму, и только в следующем тике поставить фокус
+    if (userName.value?.isEmpty ?? true) {
+      userNameFocusNode.requestFocus();
+    } else {
+      textFocusNode.requestFocus();
+    }
   }
 
   void clearReplyTo() {
@@ -78,25 +88,29 @@ class AddEditMessageModel extends AbstractModel {
     notifyListeners();
   }
 
+  bool validate() => formKey.currentState?.validate() ?? false;
+
   Future<void> save() async {
-    // предполагается, что валидация уже сделана на форме
-    final addEditMessage = AddEditMessage(userName: userName.value!, text: text.value!, id: id, replyTo: replyTo);
-    startWaiting();
-    try {
-      // await Future.delayed(Duration(seconds: 2));
-      // throw Exception('Testing adding new message error');
-      if (id == null) {
-        await _repository.add(addEditMessage);
-        await _messageListModel.fetchNewer();
-      } else {
-        final updatedMessage = await _repository.edit(addEditMessage);
-        _messageListModel.updateInList(updatedMessage);
+    if (validate()) {
+      final addEditMessage = AddEditMessage(userName: userName.value!, text: text.value!, id: id, replyTo: replyTo);
+      startWaiting();
+      try {
+        // await Future.delayed(Duration(seconds: 2));
+        // throw Exception('Testing adding new message error');
+        if (id == null) {
+          await _repository.add(addEditMessage);
+          await _messageListModel.fetchNewer();
+        } else {
+          final updatedMessage = await _repository.edit(addEditMessage);
+          _messageListModel.updateInList(updatedMessage);
+        }
+        di<UserSession>().setUserName(userName.value!);
+        clearForm();
+      } catch (e, s) {
+        presentError(e, s);
+      } finally {
+        stopWaiting();
       }
-      di<UserSession>().setUserName(userName.value!);
-    } catch (e, s) {
-      presentError(e, s);
-    } finally {
-      stopWaiting();
     }
   }
 }

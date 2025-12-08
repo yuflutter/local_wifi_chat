@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:local_wifi_chat_frontend/view/core/simple_future_builder.dart';
 import 'package:local_wifi_chat_frontend/features/text_chat/model/device_list_model.dart';
-import 'package:local_wifi_chat_frontend/view/core/error_widgets.dart';
+import 'package:local_wifi_chat_frontend/view/core/error_log_widget.dart';
 
 class DeviceListPage extends StatefulWidget {
   const DeviceListPage({super.key});
@@ -13,7 +13,7 @@ class DeviceListPage extends StatefulWidget {
 class _DeviceListPageState extends State<DeviceListPage> {
   late final _model = DeviceListModel(
     errorPresenter: (e, s) => WidgetsBinding.instance.addPostFrameCallback(
-      (_) => showErrorLogPopup(context, error: e, stack: s),
+      (_) => showErrorLogWidget(context, error: e, stack: s),
     ),
   );
   late final _initFuture = _model.fetch();

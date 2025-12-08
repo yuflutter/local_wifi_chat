@@ -5,7 +5,7 @@ import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/core/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-void showErrorLogPopup(BuildContext context, {required Object error, StackTrace? stack}) {
+void showErrorLogWidget(BuildContext context, {required Object error, StackTrace? stack}) {
   if (context.mounted) {
     showModalBottomSheet(
       context: context,
@@ -21,20 +21,6 @@ void showErrorLogPopup(BuildContext context, {required Object error, StackTrace?
         ),
       ),
     );
-
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   SnackBar(
-    //     content: ConstrainedBox(
-    //       constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
-    //       child: ErrorLogWidget(
-    //         errorInfo: errorInfo,
-    //         howToCloseDialog: ScaffoldMessenger.of(context).hideCurrentSnackBar,
-    //         parentTheme: theme,
-    //       ),
-    //     ),
-    //     duration: Duration(seconds: 120),
-    //   ),
-    // );
   }
 }
 

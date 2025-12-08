@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:local_wifi_chat_frontend/app_config.dart';
 import 'package:local_wifi_chat_frontend/core/logger.dart';
-import 'package:local_wifi_chat_frontend/view/core/error_widgets.dart';
+import 'package:local_wifi_chat_frontend/view/core/error_log_widget.dart';
 import 'package:local_wifi_chat_frontend/view/core/simple_future_builder.dart';
 import 'package:local_wifi_chat_frontend/view/home_page.dart';
 
