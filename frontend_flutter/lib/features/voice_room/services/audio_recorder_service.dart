@@ -72,7 +72,7 @@ class AudioRecorderService {
 
     reader.onLoadEnd.listen((_) {
       if (reader.result != null) {
-        completer.complete(Uint8List.view(reader.result as ByteBuffer));
+        completer.complete(reader.result as Uint8List);
       } else {
         completer.complete(null);
       }

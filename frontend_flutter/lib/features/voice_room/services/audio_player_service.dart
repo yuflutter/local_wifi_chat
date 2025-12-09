@@ -1,5 +1,6 @@
 import 'dart:html' as html;
 import 'dart:typed_data';
+import 'dart:async';
 
 class AudioPlayerService {
   final Map<String, AudioPlayerContext> _playerContexts = {};
@@ -12,7 +13,7 @@ class AudioPlayerService {
       _playerContexts[participantId] = context;
     }
 
-    context.playChunk(audioData, volume);
+    context.addChunk(audioData, volume);
   }
 
   void setVolume(String participantId, double volume) {
@@ -38,48 +39,84 @@ class AudioPlayerService {
 
 class AudioPlayerContext {
   final String participantId;
-  final List<html.AudioElement> _activeAudios = [];
+  final List<Uint8List> _buffer = [];
+  Timer? _playbackTimer;
+  html.AudioElement? _currentAudio;
+  double _volume = 1.0;
+  bool _isPlaying = false;
 
-  AudioPlayerContext(this.participantId);
+  AudioPlayerContext(this.participantId) {
+    // Запускаем таймер для периодического воспроизведения буфера
+    _playbackTimer = Timer.periodic(Duration(milliseconds: 200), (_) {
+      _playBufferedAudio();
+    });
+  }
 
-  void playChunk(Uint8List audioData, double volume) {
+  void addChunk(Uint8List audioData, double volume) {
+    _volume = volume;
+    _buffer.add(audioData);
+
+    // Ограничиваем размер буфера (максимум 2 секунды)
+    if (_buffer.length > 20) {
+      _buffer.removeAt(0);
+    }
+  }
+
+  void _playBufferedAudio() {
+    if (_buffer.isEmpty || _isPlaying) return;
+
     try {
-      // Создаем blob из аудио данных
-      final blob = html.Blob([audioData], 'audio/webm');
+      // Объединяем все чанки в один
+      final totalLength = _buffer.fold<int>(0, (sum, chunk) => sum + chunk.length);
+      final combined = Uint8List(totalLength);
+      var offset = 0;
+      for (var chunk in _buffer) {
+        combined.setRange(offset, offset + chunk.length, chunk);
+        offset += chunk.length;
+      }
+      _buffer.clear();
+
+      // Создаем blob и воспроизводим
+      final blob = html.Blob([combined], 'audio/webm');
       final url = html.Url.createObjectUrlFromBlob(blob);
 
-      // Создаем audio element
-      final audio = html.AudioElement(url);
-      audio.volume = volume;
+      _currentAudio?.pause();
+      _currentAudio = html.AudioElement(url);
+      _currentAudio!.volume = _volume;
 
-      _activeAudios.add(audio);
+      _isPlaying = true;
 
-      audio.play();
-
-      // Очистка после воспроизведения
-      audio.onEnded.listen((_) {
+      _currentAudio!.onEnded.listen((_) {
         html.Url.revokeObjectUrl(url);
-        _activeAudios.remove(audio);
+        _isPlaying = false;
+        _currentAudio = null;
+      });
+
+      _currentAudio!.onError.listen((_) {
+        html.Url.revokeObjectUrl(url);
+        _isPlaying = false;
+        _currentAudio = null;
+      });
+
+      _currentAudio!.play().catchError((_) {
+        _isPlaying = false;
       });
     } catch (e) {
-      // Игнорируем ошибки воспроизведения
+      _isPlaying = false;
     }
   }
 
   void setVolume(double volume) {
-    for (var audio in _activeAudios) {
-      audio.volume = volume;
-    }
+    _volume = volume;
+    _currentAudio?.volume = volume;
   }
 
   void stop() {
-    for (var audio in _activeAudios) {
-      try {
-        audio.pause();
-      } catch (e) {
-        // Ignore errors when stopping
-      }
-    }
-    _activeAudios.clear();
+    _playbackTimer?.cancel();
+    _playbackTimer = null;
+    _currentAudio?.pause();
+    _currentAudio = null;
+    _buffer.clear();
+    _isPlaying = false;
   }
 }
