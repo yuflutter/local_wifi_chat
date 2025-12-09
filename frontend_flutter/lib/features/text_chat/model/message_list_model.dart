@@ -88,7 +88,7 @@ class MessageListModel extends AbstractModel {
             log.info(null, "Batch of older loaded: ${bath.all.length} items");
           }
           list = MessageList(
-            all: list.all + bath.all,
+            all: list.all + _cleanOfDuplicates(bath.all, origin: list.all),
             isOlderAvailable: bath.isOlderAvailable,
           );
 
@@ -105,7 +105,7 @@ class MessageListModel extends AbstractModel {
             }
           }
           list = MessageList(
-            all: bath.all + list.all,
+            all: _cleanOfDuplicates(bath.all, origin: list.all) + list.all,
             isOlderAvailable: list.isOlderAvailable,
           );
       }
@@ -116,6 +116,11 @@ class MessageListModel extends AbstractModel {
     } finally {
       notifyListeners();
     }
+  }
+
+  List<Message> _cleanOfDuplicates(List<Message> batch, {required List<Message> origin}) {
+    final ids = origin.map((m) => m.id).toSet();
+    return batch.where((m) => ids.add(m.id)).toList();
   }
 
   void updateInList(Message message) {

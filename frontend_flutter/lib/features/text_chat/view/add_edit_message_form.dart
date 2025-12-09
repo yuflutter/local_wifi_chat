@@ -19,7 +19,7 @@ class AddEditMessageForm extends StatelessWidget {
         if (model.isFormExpanded)
           GestureDetector(
             onTap: model.clearForm,
-            child: Container(color: Colors.black.withAlpha(150)),
+            child: Container(color: Colors.black.withAlpha(100)),
           ),
         Form(
           key: model.formKey,

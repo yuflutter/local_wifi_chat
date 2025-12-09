@@ -10,8 +10,8 @@ class AddEditMessageModel extends AbstractModel {
   final MessageListModel _messageListModel;
   final AbstractMessagesRepository _repository;
 
-  late final StringField userName = StringField(label: 'Ваше имя', hint: null, value: di<UserSession>().userName);
-  late final StringField text = StringField(label: 'Текст сообщения', hint: null);
+  final StringField userName = StringField(label: 'Ваше имя', hint: null, value: di<UserSession>().userName);
+  final StringField text = StringField(label: 'Текст сообщения', hint: null);
   String? id;
   ReplyTo? replyTo;
 
