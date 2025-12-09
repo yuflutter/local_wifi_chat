@@ -33,6 +33,15 @@
   <link rel="manifest" href="manifest.json">
 
   <style>
+    body {
+      background-color: #000000; 
+      color: #ffffff;
+    }
+    canvas {
+      background-color: #000000; /* Или просто 'black' */
+      border: 1px solid white;    /* Опционально: добавляем белую границу, чтобы элемент canvas был виден */
+    }
+
     #loading {
       position: fixed;
       top: 0;
@@ -47,7 +56,6 @@
       z-index: 9999;
       transition: opacity 0.5s ease-out;
     }
-    
     #loading.loaded {
       opacity: 0;
       pointer-events: none;
