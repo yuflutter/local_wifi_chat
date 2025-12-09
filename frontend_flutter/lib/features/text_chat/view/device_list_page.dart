@@ -27,7 +27,16 @@ class _DeviceListPageState extends State<DeviceListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Connected devices')),
+      appBar: AppBar(
+        title: const Text('Connected devices'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            tooltip: 'Обновить',
+            onPressed: _model.fetch,
+          ),
+        ],
+      ),
       body: SimpleFutureBuilder<void>(
         future: _initFuture,
         builder: (context, _) {

@@ -8,7 +8,7 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  createState() => _HomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
@@ -16,7 +16,7 @@ class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
 
   @override
-  build(context) {
+  Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isLandscape = constraints.maxWidth > constraints.maxHeight;
@@ -45,7 +45,10 @@ class _HomePageState extends State<HomePage> {
           );
         } else {
           return Scaffold(
-            body: _pages[_currentIndex],
+            body: IndexedStack(
+              index: _currentIndex,
+              children: _pages,
+            ),
             bottomNavigationBar: BottomNavigationBar(
               currentIndex: _currentIndex,
               onTap: (index) => setState(() => _currentIndex = index),

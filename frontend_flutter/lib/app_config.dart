@@ -4,6 +4,7 @@ import 'package:local_wifi_chat_frontend/features/text_chat/data/devices_reposit
 import 'package:local_wifi_chat_frontend/features/text_chat/data/messages_repository.dart';
 import 'package:local_wifi_chat_frontend/user_session.dart';
 
+// Вариант конфигурации (flavor) берет из командной строки --dart-define=FLAVOR=RELASE
 const _flavor = String.fromEnvironment('FLAVOR', defaultValue: 'DEBUG'); // RELEASE
 
 class DebugConfig extends AppConfig {
@@ -11,6 +12,7 @@ class DebugConfig extends AppConfig {
   final apiUrl = 'http://localhost:9090/api/'; // 192.168.24.53
 
   @override
+  // ignore: overridden_fields
   final fetchBatchSize = 5;
 
   @override
@@ -26,8 +28,7 @@ class ReleaseConfig extends AppConfig {
 }
 
 // Инжектит глобальные объекты, и инициализирует их ПОСЛЕДОВАТЕЛЬНО.
-// Запускается при старте главного экрана, ошибки выводятся туда же.
-// Вариант конфигурации (debug, prod) берет из командной строки --dart-define=FLAVOR=prod
+// Запускается в main(), ошибки выводятся туда же, логгер инициализируем раньше.
 Future<void> initApp() async {
   final config = switch (_flavor) {
     'DEBUG' => DebugConfig(),

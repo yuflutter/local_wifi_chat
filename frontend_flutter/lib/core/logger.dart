@@ -139,9 +139,11 @@ class InMemoryLogger extends Logger {
   List<String> getAll() => _entries.map((e) => e.toString()).toList();
   List<String> getFirst(int count) => _entries.take(count).map((e) => e.toString()).toList();
 
+  /// Асинхронная нициализация логгера - опасная штука, ведь пока нет логгера, ошибки выводить некуда.
   @override
   Future<void> init() async {}
 }
 
+// ignore: unintended_html_in_doc_comment
 /// Краткий синоним для di<Logger>()
 Logger get log => DI.get<Logger>();

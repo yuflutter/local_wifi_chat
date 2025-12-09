@@ -38,19 +38,26 @@ class MessageListModel extends AbstractModel {
     super.dispose();
   }
 
-  /// Для первого fetch() ошибку обрабатываем иначе, чем для остальных фоновых запросов,
+  void scrollToTop() {
+    if (scrollController.hasClients) scrollController.jumpTo(0);
+  }
+
+  /// Для первого fetch() ошибку обрабатываем иначе, чем для остальных запросов,
   /// а именно выбрасываем исключения для перехвата его в FutureBuilder.
-  Future<void> fetchTop() async {
+  Future<void> fetchTop({bool noPresentError = false}) async {
     _refreshTimer?.cancel();
-    await _fetch(_FetchMode.top, noPresentError: true);
+
+    await _fetch(_FetchMode.top, noPresentError: noPresentError);
+    scrollToTop();
+
     _refreshTimer = Timer.periodic(di<AppConfig>().refreshListsEvery, (
       _,
     ) async {
       try {
         await fetchNewer();
       } catch (e, s) {
-        presentError(e, s);
         _refreshTimer?.cancel();
+        presentError(e, s);
       } finally {
         notifyListeners();
       }
@@ -71,7 +78,6 @@ class MessageListModel extends AbstractModel {
           final bath = await _repository.fetch(limit: defaultLimit);
           log.info(null, "Top batch loaded: ${bath.all.length} items");
           list = bath;
-        // _isScrollToTop = OneTimeFlag(true);
 
         case _FetchMode.older:
           final bath = await _repository.fetch(
