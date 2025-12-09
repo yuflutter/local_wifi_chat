@@ -54,14 +54,13 @@ class AddEditMessageModel extends AbstractModel {
   }
 
   void startAdding({Message? replyToMessage, String? replyToQuote}) async {
-    _clearForm();
     replyTo = (replyToMessage != null)
         ? ReplyTo(messageId: replyToMessage.id, userName: replyToMessage.userName, quote: replyToQuote!)
         : null;
     isFormExpanded = true;
     notifyListeners();
     // сначала показать всю форму, и только в следующем тике поставить фокус
-    await Future.delayed(Duration(milliseconds: 100));
+    await Future.delayed(Duration(milliseconds: 200));
     if (userName.value?.isEmpty ?? true) {
       userNameFocusNode.requestFocus();
     } else {
@@ -70,14 +69,13 @@ class AddEditMessageModel extends AbstractModel {
   }
 
   void startEditing({Message? messageToEdit}) async {
-    _clearForm();
     id = messageToEdit?.id;
     userName.controller.text = messageToEdit?.userName ?? '';
     text.controller.text = messageToEdit?.text ?? '';
     isFormExpanded = true;
     notifyListeners();
     // сначала показать всю форму, и только в следующем тике поставить фокус
-    await Future.delayed(Duration(milliseconds: 100));
+    await Future.delayed(Duration(milliseconds: 200));
     if (userName.value?.isEmpty ?? true) {
       userNameFocusNode.requestFocus();
     } else {

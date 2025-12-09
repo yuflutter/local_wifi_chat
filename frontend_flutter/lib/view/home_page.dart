@@ -97,9 +97,7 @@ class _HomePageState extends State<HomePage> {
                     ..._pages.map((e) => NavigationRailDestination(icon: e.icon, label: Text(e.label))),
                   ],
                 ),
-                Expanded(
-                  child: Stack(children: [..._stackOfPages()]),
-                ),
+                Expanded(child: Stack(children: [..._stackOfPages()])),
               ],
             ),
           );

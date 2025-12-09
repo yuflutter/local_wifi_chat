@@ -17,7 +17,7 @@ class DebugConfig extends AppConfig {
 
   @override
   Future<void> init() async {
-    // throw "Тест ошибки инициализации приложения";
+    // throw "Тестовая ошибка инициализации приложения";
   }
 }
 
@@ -35,7 +35,6 @@ Future<void> initApp() async {
     'RELEASE' => ReleaseConfig(),
     _ => throw 'Undefined FLAVOR = $_flavor',
   };
-
   await DI.putAndInit(config);
   await DI.putAndInit(UserSession());
   await DI.putAndInit(
