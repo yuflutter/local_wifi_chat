@@ -13,10 +13,10 @@ class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
 
   @override
-  State<ChatPage> createState() => _ChatPageState();
+  State<ChatPage> createState() => ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
+class ChatPageState extends State<ChatPage> {
   late final _messageListModel = MessageListModel(errorPresenter: _errorPresenter);
 
   // Ошибку первого фетча показываем на экране (вместо контента), остальные презентером (попапом).

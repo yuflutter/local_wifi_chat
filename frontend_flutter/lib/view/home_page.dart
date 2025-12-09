@@ -4,6 +4,22 @@ import 'package:local_wifi_chat_frontend/features/text_chat/view/device_list_pag
 import 'package:local_wifi_chat_frontend/features/voice_room/view/audio_page.dart';
 import 'package:local_wifi_chat_frontend/view/settings_page.dart';
 
+class _Page {
+  final WidgetBuilder builder;
+  final bool isPersistent;
+  final Icon icon;
+  final String label;
+  var isLoaded = false;
+  _Page(this.builder, this.isPersistent, this.icon, this.label);
+}
+
+final _pages = [
+  _Page((_) => ChatPage(), true, Icon(Icons.chat), 'Чат'),
+  _Page((_) => AudioPage(), false, Icon(Icons.audiotrack), 'Аудио'),
+  _Page((_) => DeviceListPage(), false, Icon(Icons.devices), 'Устройства'),
+  _Page((_) => SettingsPage(), false, Icon(Icons.settings), 'Настройки'),
+];
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -12,52 +28,78 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final _pages = const [ChatPage(), AudioPage(), DeviceListPage(), SettingsPage()];
-  int _currentIndex = 0;
+  int _pageIndex = 0;
+
+  @override
+  void initState() {
+    _turnPage(_pageIndex);
+    super.initState();
+  }
+
+  void _turnPage(int index) => setState(() {
+    _pageIndex = index;
+    _pages[_pageIndex].isLoaded = true;
+  });
+
+  Iterable<Widget> _stackOfPages() => Iterable.generate(_pages.length).map(
+    (index) {
+      final page = _pages[index];
+      if (!page.isLoaded) {
+        return SizedBox.shrink();
+        //
+      } else if (!page.isPersistent) {
+        return Visibility(
+          visible: _pageIndex == index,
+          child: page.builder(context),
+        );
+        //
+      } else {
+        return Offstage(
+          offstage: _pageIndex != index,
+          // важно для анимаций и контроллеров
+          child: TickerMode(
+            enabled: _pageIndex == index,
+            child: page.builder(context),
+          ),
+        );
+      }
+    },
+  );
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isLandscape = constraints.maxWidth > constraints.maxHeight;
-        if (isLandscape) {
+        // мобилка
+        if (constraints.maxWidth < constraints.maxHeight) {
           return Scaffold(
-            body: Row(
-              children: [
-                NavigationRail(
-                  selectedIndex: _currentIndex,
-                  onDestinationSelected: (index) {
-                    setState(() {
-                      _currentIndex = index;
-                    });
-                  },
-                  labelType: NavigationRailLabelType.all,
-                  destinations: const [
-                    NavigationRailDestination(icon: Icon(Icons.chat), label: Text('Чат')),
-                    NavigationRailDestination(icon: Icon(Icons.audiotrack), label: Text('Аудио')),
-                    NavigationRailDestination(icon: Icon(Icons.devices), label: Text('Устройства')),
-                    NavigationRailDestination(icon: Icon(Icons.settings), label: Text('Настройки')),
-                  ],
-                ),
-                Expanded(child: _pages[_currentIndex]),
+            body: Stack(children: [..._stackOfPages()]),
+            bottomNavigationBar: BottomNavigationBar(
+              currentIndex: _pageIndex,
+              onTap: _turnPage,
+              type: BottomNavigationBarType.fixed,
+              items: [
+                ..._pages.map((e) => BottomNavigationBarItem(icon: e.icon, label: e.label)),
               ],
             ),
           );
+          // десктоп
         } else {
           return Scaffold(
-            body: IndexedStack(
-              index: _currentIndex,
-              children: _pages,
-            ),
-            bottomNavigationBar: BottomNavigationBar(
-              currentIndex: _currentIndex,
-              onTap: (index) => setState(() => _currentIndex = index),
-              type: BottomNavigationBarType.fixed,
-              items: const [
-                BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Чат'),
-                BottomNavigationBarItem(icon: Icon(Icons.audiotrack), label: 'Аудио'),
-                BottomNavigationBarItem(icon: Icon(Icons.devices), label: 'Устройства'),
-                BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Настройки'),
+            body: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                NavigationRail(
+                  selectedIndex: _pageIndex,
+                  onDestinationSelected: _turnPage,
+                  labelType: NavigationRailLabelType.all,
+                  destinations: [
+                    ..._pages.map((e) => NavigationRailDestination(icon: e.icon, label: Text(e.label))),
+                  ],
+                ),
+                Expanded(
+                  child: Stack(children: [..._stackOfPages()]),
+                ),
               ],
             ),
           );
