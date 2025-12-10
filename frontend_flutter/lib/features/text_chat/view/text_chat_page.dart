@@ -9,14 +9,14 @@ import 'package:local_wifi_chat_frontend/features/text_chat/view/message_list_wi
 import 'package:local_wifi_chat_frontend/view/core/error_log_widget.dart';
 import 'package:local_wifi_chat_frontend/view/core/simple_future_builder.dart';
 
-class ChatPage extends StatefulWidget {
-  const ChatPage({super.key});
+class TextChatPage extends StatefulWidget {
+  const TextChatPage({super.key});
 
   @override
-  State<ChatPage> createState() => ChatPageState();
+  State<TextChatPage> createState() => TextChatPageState();
 }
 
-class ChatPageState extends State<ChatPage> {
+class TextChatPageState extends State<TextChatPage> {
   late final _messageListModel = MessageListModel(errorPresenter: _errorPresenter);
 
   // Ошибку первого фетча показываем на экране (вместо контента), остальные презентером (попапом).

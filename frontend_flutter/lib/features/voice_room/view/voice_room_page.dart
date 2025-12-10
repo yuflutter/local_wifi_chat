@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/audio_room_provider.dart';
+import '../model/voice_room_model.dart';
 import '../services/audio_room_service.dart' as audio_service;
-import '../widgets/participant_tile.dart';
-import '../widgets/connection_dialog.dart';
+import 'participant_tile.dart';
+import 'connection_dialog.dart';
 
-class AudioPage extends StatefulWidget {
-  const AudioPage({super.key});
+class VoiceRoomPage extends StatefulWidget {
+  const VoiceRoomPage({super.key});
 
   @override
-  State<AudioPage> createState() => _AudioPageState();
+  State<VoiceRoomPage> createState() => _VoiceRoomPageState();
 }
 
-class _AudioPageState extends State<AudioPage> {
+class _VoiceRoomPageState extends State<VoiceRoomPage> {
   @override
   void initState() {
     super.initState();
@@ -35,21 +35,21 @@ class _AudioPageState extends State<AudioPage> {
       appBar: AppBar(
         title: const Text('Voice Room'),
         actions: [
-          Consumer<AudioRoomProvider>(
-            builder: (context, provider, _) {
+          Consumer<VoiceRoomModel>(
+            builder: (context, model, _) {
               return Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Center(
-                  child: _buildConnectionStatus(provider.connectionState),
+                  child: _buildConnectionStatus(model.connectionState),
                 ),
               );
             },
           ),
         ],
       ),
-      body: Consumer<AudioRoomProvider>(
-        builder: (context, provider, _) {
-          if (!provider.isConnected) {
+      body: Consumer<VoiceRoomModel>(
+        builder: (context, model, _) {
+          if (!model.isConnected) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -67,7 +67,7 @@ class _AudioPageState extends State<AudioPage> {
             );
           }
 
-          if (provider.participants.isEmpty) {
+          if (model.participants.isEmpty) {
             return const Center(
               child: Text('Нет участников в комнате'),
             );
@@ -75,34 +75,31 @@ class _AudioPageState extends State<AudioPage> {
 
           return ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: provider.participants.length,
+            itemCount: model.participants.length,
             itemBuilder: (context, index) {
-              final participant = provider.participants[index];
-              final isCurrentUser = participant.id == provider.currentUserId;
-
+              final participant = model.participants[index];
               return ParticipantTile(
                 participant: participant,
-                isCurrentUser: isCurrentUser,
                 onVolumeChanged: (volume) {
-                  provider.setParticipantVolume(participant.id, volume);
+                  model.setParticipantVolume(participant.id, volume);
                 },
                 onMuteToggle: (mute) {
-                  provider.muteParticipant(participant.id, mute);
+                  model.muteParticipant(participant.id, mute);
                 },
               );
             },
           );
         },
       ),
-      floatingActionButton: Consumer<AudioRoomProvider>(
-        builder: (context, provider, _) {
-          if (!provider.isConnected) return const SizedBox.shrink();
+      floatingActionButton: Consumer<VoiceRoomModel>(
+        builder: (context, model, _) {
+          if (!model.isConnected) return const SizedBox.shrink();
 
           return FloatingActionButton.large(
-            onPressed: provider.toggleMicrophone,
-            backgroundColor: provider.isMicrophoneEnabled ? Colors.red : Colors.blue,
+            onPressed: model.toggleMicrophone,
+            backgroundColor: model.isMicrophoneEnabled ? Colors.red : Colors.blue,
             child: Icon(
-              provider.isMicrophoneEnabled ? Icons.mic : Icons.mic_off,
+              model.isMicrophoneEnabled ? Icons.mic : Icons.mic_off,
               size: 32,
             ),
           );

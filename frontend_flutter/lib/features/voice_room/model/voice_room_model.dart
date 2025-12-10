@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../models/participant.dart';
+import 'participant.dart';
 import '../services/audio_room_service.dart';
 import '../services/audio_player_service.dart';
 import '../services/audio_recorder_service.dart';
 
-class AudioRoomProvider extends ChangeNotifier {
+class VoiceRoomModel extends ChangeNotifier {
   final AudioRoomService _roomService = AudioRoomService();
   final AudioPlayerService _playerService = AudioPlayerService();
   final AudioRecorderService _recorderService = AudioRecorderService();
@@ -25,7 +25,6 @@ class AudioRoomProvider extends ChangeNotifier {
   bool get isMicrophoneEnabled => _isMicrophoneEnabled;
   bool get isConnected => _connectionState == ConnectionState.connected;
   String? get error => _error;
-  String? get currentUserId => _roomService.currentUserId;
 
   Future<void> connect(String url, String userId, String userName) async {
     try {
@@ -41,7 +40,7 @@ class AudioRoomProvider extends ChangeNotifier {
 
       _audioChunkSubscription = _roomService.audioChunkStream.listen((chunkData) {
         // Не воспроизводим свой собственный звук
-        if (chunkData.participantId == userId) return;
+        // if (chunkData.participantId == userId) return;
 
         final participant = _participants.firstWhere(
           (p) => p.id == chunkData.participantId,

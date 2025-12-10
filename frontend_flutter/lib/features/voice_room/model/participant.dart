@@ -1,9 +1,13 @@
+import 'package:local_wifi_chat_frontend/core/di.dart';
+import 'package:local_wifi_chat_frontend/user_session.dart';
+
 class Participant {
   final String id;
   final String name;
   final bool isMuted;
   final bool isSpeaking;
   final double volume;
+  final bool isMe;
 
   Participant({
     required this.id,
@@ -11,7 +15,7 @@ class Participant {
     this.isMuted = false,
     this.isSpeaking = false,
     this.volume = 1.0,
-  });
+  }) : isMe = (id == di<UserSession>().userHash);
 
   Participant copyWith({
     String? id,

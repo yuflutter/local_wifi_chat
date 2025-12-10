@@ -5,7 +5,7 @@ import 'package:local_wifi_chat_frontend/app_config.dart';
 import 'package:local_wifi_chat_frontend/core/logger.dart';
 import 'package:local_wifi_chat_frontend/view/core/error_log_widget.dart';
 import 'package:local_wifi_chat_frontend/view/home_page.dart';
-import 'package:local_wifi_chat_frontend/features/voice_room/providers/audio_room_provider.dart';
+import 'package:local_wifi_chat_frontend/features/voice_room/model/voice_room_model.dart';
 
 (Object, StackTrace?)? _initError;
 
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
     } else {
       return MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => AudioRoomProvider()),
+          ChangeNotifierProvider(create: (_) => VoiceRoomModel()),
         ],
         child: MaterialApp(
           title: di<AppConfig>().appName,

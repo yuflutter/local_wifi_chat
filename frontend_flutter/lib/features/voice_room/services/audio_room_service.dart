@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import '../models/participant.dart';
-import '../models/ws_message.dart';
+import '../model/participant.dart';
+import '../model/ws_message.dart';
 
 class AudioRoomService {
   WebSocketChannel? _channel;
@@ -21,7 +21,6 @@ class AudioRoomService {
 
   List<Participant> get participants => List.unmodifiable(_participants);
   bool get isConnected => _isConnected;
-  String? get currentUserId => _currentUserId;
 
   Future<void> connect(String url, String userId, String userName) async {
     try {

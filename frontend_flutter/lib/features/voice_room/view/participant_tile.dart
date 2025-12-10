@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
-import '../models/participant.dart';
+import '../model/participant.dart';
 
 class ParticipantTile extends StatelessWidget {
   final Participant participant;
-  final bool isCurrentUser;
   final ValueChanged<double>? onVolumeChanged;
   final ValueChanged<bool>? onMuteToggle;
 
   const ParticipantTile({
     super.key,
     required this.participant,
-    required this.isCurrentUser,
     this.onVolumeChanged,
     this.onMuteToggle,
   });
@@ -27,7 +25,7 @@ class ParticipantTile extends StatelessWidget {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: isCurrentUser ? Colors.blue : Colors.grey,
+                  backgroundColor: participant.isMe ? Colors.blue : Colors.grey,
                   child: Text(
                     participant.name.isNotEmpty ? participant.name[0].toUpperCase() : '?',
                     style: const TextStyle(color: Colors.white),
@@ -47,7 +45,7 @@ class ParticipantTile extends StatelessWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          if (isCurrentUser) ...[
+                          if (participant.isMe) ...[
                             const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -95,7 +93,7 @@ class ParticipantTile extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (!isCurrentUser)
+                if (!participant.isMe)
                   IconButton(
                     icon: Icon(
                       participant.volume == 0 ? Icons.volume_off : Icons.volume_up,
@@ -107,7 +105,7 @@ class ParticipantTile extends StatelessWidget {
                   ),
               ],
             ),
-            if (!isCurrentUser) ...[
+            if (!participant.isMe) ...[
               const SizedBox(height: 12),
               Row(
                 children: [

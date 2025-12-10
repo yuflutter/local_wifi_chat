@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:local_wifi_chat_frontend/core/di.dart';
+import 'package:local_wifi_chat_frontend/user_session.dart';
 import 'package:provider/provider.dart';
-import '../providers/audio_room_provider.dart';
+import '../model/voice_room_model.dart';
 
 class ConnectionDialog extends StatefulWidget {
   const ConnectionDialog({super.key});
@@ -19,8 +21,9 @@ class _ConnectionDialogState extends State<ConnectionDialog> {
   @override
   void initState() {
     super.initState();
-    // Генерируем случайный ID пользователя
-    _userIdController.text = DateTime.now().millisecondsSinceEpoch.toString();
+    final session = di<UserSession>();
+    _userIdController.text = session.userHash;
+    _userNameController.text = session.userName ?? '';
   }
 
   @override
@@ -37,7 +40,7 @@ class _ConnectionDialogState extends State<ConnectionDialog> {
     setState(() => _isConnecting = true);
 
     try {
-      final provider = context.read<AudioRoomProvider>();
+      final provider = context.read<VoiceRoomModel>();
       await provider.connect(
         _urlController.text,
         _userIdController.text,
