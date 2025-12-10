@@ -1,3 +1,5 @@
+/// Иногда нужная вещь при использовании ChangeNotifier. Но опасная.
+/// Не нужна в архитектурах с иммутабельным стейтом (например Cubit).
 class OneTimeEvent<T> {
   OneTimeEvent(this._value);
 

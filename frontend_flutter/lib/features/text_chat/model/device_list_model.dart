@@ -18,7 +18,7 @@ class DeviceListModel extends AbstractModel {
   }
 
   /// Для первого fetch() ошибку обрабатываем иначе, чем для остальных фоновых.
-  /// А именно выбрасываем исключения для перехвата его в SimpleFutureBuilder.
+  /// А именно не используем errorPresenter, а выбрасываем исключение для перехвата его в FutureBuilder.
   Future<void> fetch() async {
     _refreshTimer?.cancel();
     all = await _repository.fetch();

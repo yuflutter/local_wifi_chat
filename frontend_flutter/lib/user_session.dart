@@ -5,7 +5,7 @@ import 'package:local_wifi_chat_frontend/app_config.dart';
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Хранит сессионные данные, требует асинхронной инициализации
+/// Хранит сессионные данные, требует асинхронной инициализации.
 class UserSession implements Initializable {
   late final SharedPreferences _prefs;
   late final String _userHash;
@@ -22,8 +22,8 @@ class UserSession implements Initializable {
     }
   }
 
-  /// Инициализация локального хранилища и хеша пользователя
-  /// Запускается при старте приложения
+  /// Инициализация локального хранилища и хеша пользователя,
+  /// запускается при старте приложения с выводом ошибок на главный экран.
   @override
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();

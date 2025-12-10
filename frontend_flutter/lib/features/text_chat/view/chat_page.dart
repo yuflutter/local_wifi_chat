@@ -45,7 +45,7 @@ class ChatPageState extends State<ChatPage> {
                     actions: [
                       IconButton(
                         icon: Icon(Icons.refresh),
-                        tooltip: 'Обновить',
+                        tooltip: 'Обновить всё',
                         onPressed: _messageListModel.fetchTop,
                       ),
                     ],
@@ -73,6 +73,7 @@ class ChatPageState extends State<ChatPage> {
                         padding: const EdgeInsets.fromLTRB(0, 0, 0, 52),
                         child: FloatingActionButton(
                           onPressed: _messageListModel.scrollToTop,
+                          tooltip: 'Имеются новые непрочитанные',
                           backgroundColor: Colors.red,
                           child: Icon(Icons.arrow_downward),
                         ),

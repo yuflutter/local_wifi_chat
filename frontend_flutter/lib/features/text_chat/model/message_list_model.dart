@@ -14,11 +14,12 @@ class MessageListModel extends AbstractModel {
   /// Тут список сообщений
   var list = MessageList.empty();
 
-  /// Имеются новые непрочитанные, используется для показа кнопки "вниз"
+  /// Имеются новые непрочитанные сообщения, используется для показа кнопки "вниз".
   var _existsUnread = false;
   bool get existsUnread => _existsUnread;
 
-  /// Контроллер для отслеживания прочитанных / непрочитанных
+  /// Контроллер используется для отслеживания наличия прочитанных / непрочитанных сообщений.
+  /// и принудительного скролла. Перенесено из виджета в модель, потому что это часть вью-логики.
   late final ScrollController scrollController = ScrollController()
     ..addListener(() {
       if (scrollController.position.pixels < 10) {
@@ -42,8 +43,8 @@ class MessageListModel extends AbstractModel {
     if (scrollController.hasClients) scrollController.jumpTo(0);
   }
 
-  /// Для первого fetch() ошибку обрабатываем иначе, чем для остальных запросов,
-  /// а именно выбрасываем исключения для перехвата его в FutureBuilder.
+  /// Для первого fetch() ошибку обрабатываем иначе, чем для остальных фоновых.
+  /// А именно не используем errorPresenter, а выбрасываем исключение для перехвата его в FutureBuilder.
   Future<void> fetchTop({bool noPresentError = false}) async {
     _refreshTimer?.cancel();
 
@@ -118,11 +119,15 @@ class MessageListModel extends AbstractModel {
     }
   }
 
+  /// В фоне работает автообновление, и при этом мы совершаем действия, что тоже приводит к обновлениям.
+  /// Эти фьючи могут работать параллельно, и результаты приходить в разном порядке, что создает конфликты.
+  /// Можно конечно отменять уже запущенные фьючи, но проще сделать устойчивый алгоритм слияния результатов.
   List<Message> _cleanOfDuplicates(List<Message> batch, {required List<Message> origin}) {
     final ids = origin.map((m) => m.id).toSet();
     return batch.where((m) => ids.add(m.id)).toList();
   }
 
+  /// При изменении сообщения бекенд возвращает измененный объект, который нужно вставить в дерево.
   void updateInList(Message message) {
     final i = list.all.indexWhere((m) => m.id == message.id);
     if (i < 0) {

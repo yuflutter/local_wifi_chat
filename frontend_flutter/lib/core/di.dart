@@ -44,7 +44,9 @@ abstract class Disposable {
 /// Пример использования с полиморфизмом
 void exampleOfUseGlobal() {
   DI.put(_MyUserSession());
+  // ignore: avoid_print
   print(di<_AbstractUserSession>());
+  // ignore: avoid_print
   print(di<_MyUserSession>());
 }
 

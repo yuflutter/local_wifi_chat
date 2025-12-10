@@ -10,7 +10,7 @@ import 'package:local_wifi_chat_frontend/features/voice_room/providers/audio_roo
 (Object, StackTrace?)? _initError;
 
 void main() async {
-  await DI.putAndInit(InMemoryLogger(storeUpToEntries: 100)); // инициализация логгера не должна выбрасывать ошибку
+  await DI.putAndInit(InMemoryLogger(storeUpToEntries: 100)); // инициализация логгера не должна выбрасывать ошибку!
   ErrorWidget.builder = (FlutterErrorDetails e) => ErrorLogWidget(error: log.error('Ошибка рендеринга', e, e.stack));
   try {
     await initApp();

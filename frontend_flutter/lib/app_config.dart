@@ -46,6 +46,7 @@ Future<void> initApp() async {
   DI.putAll([MessagesRepository(), DevicesRepository()]);
 }
 
+/// Полиморфизм конфига - это важная и часто встречающаяся задача.
 abstract class AppConfig implements Initializable {
   final appName = 'Local WiFi Chat';
   abstract final String apiUrl;

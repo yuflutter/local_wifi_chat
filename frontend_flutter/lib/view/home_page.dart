@@ -41,6 +41,7 @@ class _HomePageState extends State<HomePage> {
     _pages[_pageIndex].isLoaded = true;
   });
 
+  /// Этот хак позволяет часть страниц сохранять между заходами, а часть пересоздавать каждый раз.
   Iterable<Widget> _stackOfPages() => Iterable.generate(_pages.length).map(
     (index) {
       final page = _pages[index];

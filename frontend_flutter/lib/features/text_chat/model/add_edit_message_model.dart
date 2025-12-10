@@ -18,10 +18,12 @@ class AddEditMessageModel extends AbstractModel {
   var isFormExpanded = false;
   final formKey = GlobalKey<FormState>();
 
+  /// Управление фокусом тоже перенесено в модель, так как это часть вью-логики раскрытия формы и показа ошибок.
   final FocusNode userNameFocusNode = FocusNode();
   late final FocusNode textFocusNode = FocusNode()
     ..addListener(() => (textFocusNode.hasFocus && !isFormExpanded) ? startAdding() : null);
 
+  // Валидаторы полей приходится устанавливать в теле конструктора, так как они не чистые.
   AddEditMessageModel({
     super.errorPresenter,
     MessageListModel? messageListModel,
@@ -33,12 +35,15 @@ class AddEditMessageModel extends AbstractModel {
   }
 
   void _clearForm() {
-    text.controller.clear();
+    userName
+      ..clear()
+      ..value = di<UserSession>().userName;
+    text.clear();
     id = null;
     replyTo = null;
   }
 
-  void clearForm() {
+  void clearAndCollapseForm() {
     formKey.currentState?.reset();
     _clearForm();
     textFocusNode.unfocus();
@@ -88,7 +93,15 @@ class AddEditMessageModel extends AbstractModel {
     notifyListeners();
   }
 
-  bool validate() => formKey.currentState?.validate() ?? false;
+  bool validate() {
+    final res = formKey.currentState?.validate();
+    if (userName.hasError) {
+      userNameFocusNode.requestFocus();
+    } else if (text.hasError) {
+      textFocusNode.requestFocus();
+    }
+    return res ?? false;
+  }
 
   Future<void> save() async {
     if (validate()) {
@@ -106,7 +119,7 @@ class AddEditMessageModel extends AbstractModel {
           _messageListModel.updateInList(updatedMessage);
         }
         di<UserSession>().setUserName(userName.value!);
-        clearForm();
+        clearAndCollapseForm();
       } catch (e, s) {
         presentError(e, s);
       } finally {

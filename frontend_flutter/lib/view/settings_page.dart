@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:local_wifi_chat_frontend/app_config.dart';
-
-import '/core/di.dart';
-import '../user_session.dart';
+import 'package:local_wifi_chat_frontend/core/di.dart';
+import 'package:local_wifi_chat_frontend/user_session.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});

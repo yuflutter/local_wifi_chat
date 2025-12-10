@@ -96,6 +96,7 @@ class _ErrorLogWidgetState extends State<ErrorLogWidget> {
     Clipboard.setData(ClipboardData(text: _error.detailedText));
   }
 
+  // TODO: доделать кодировку, протестировать
   void _sendToSupport() {
     final url =
         'mailto:support@example.com?subject=${di<AppConfig>().appName}: ${_error.title}&body=${_error.detailedText}';
