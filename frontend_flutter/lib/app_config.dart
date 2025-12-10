@@ -48,7 +48,7 @@ Future<void> initApp() async {
 
 /// Полиморфизм конфига - это важная и часто встречающаяся задача.
 abstract class AppConfig implements Initializable {
-  final appName = 'Local WiFi Chat';
+  final appName = 'Локальный WiFi чат';
   abstract final String apiUrl;
 
   /// Цитируемый текст будет обрезаться до

@@ -28,7 +28,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Connected devices'),
+        title: const Text('Подключенные устройства'),
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
@@ -43,25 +43,29 @@ class _DeviceListPageState extends State<DeviceListPage> {
           return ListenableBuilder(
             listenable: _model,
             builder: (context, _) {
-              return ListView(
-                children: [
-                  ..._model.all.map(
-                    (e) => Card(
-                      margin: const EdgeInsets.only(bottom: 12.0),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: SelectableText(
-                          e,
-                          style: const TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 12,
+              if (_model.all.isEmpty) {
+                return Center(child: Text('Не удалось обнаружить устройства'));
+              } else {
+                return ListView(
+                  children: [
+                    ..._model.all.map(
+                      (e) => Card(
+                        margin: const EdgeInsets.only(bottom: 12.0),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: SelectableText(
+                            e,
+                            style: const TextStyle(
+                              fontFamily: 'monospace',
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              );
+                  ],
+                );
+              }
             },
           );
         },

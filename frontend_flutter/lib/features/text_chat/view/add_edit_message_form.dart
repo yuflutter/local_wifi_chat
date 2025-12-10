@@ -21,6 +21,7 @@ class AddEditMessageForm extends StatelessWidget {
             onTap: model.clearAndCollapseForm,
             child: Container(color: Colors.black.withAlpha(100)),
           ),
+
         KeyboardListener(
           focusNode: FocusNode(),
           onKeyEvent: (event) {
@@ -72,6 +73,7 @@ class AddEditMessageForm extends StatelessWidget {
                     ),
                     SizedBox(height: 9),
                   },
+
                   Stack(
                     alignment: AlignmentDirectional.centerEnd,
                     children: [

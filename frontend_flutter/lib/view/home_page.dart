@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:local_wifi_chat_frontend/features/text_chat/view/chat_page.dart';
 import 'package:local_wifi_chat_frontend/features/text_chat/view/device_list_page.dart';
 import 'package:local_wifi_chat_frontend/features/voice_room/view/audio_page.dart';
-import 'package:local_wifi_chat_frontend/view/settings_page.dart';
+import 'package:local_wifi_chat_frontend/view/profile_page.dart';
 
 class _Page {
   final WidgetBuilder builder;
@@ -17,7 +17,7 @@ final _pages = [
   _Page((_) => ChatPage(), true, Icon(Icons.chat), 'Чат'),
   _Page((_) => AudioPage(), false, Icon(Icons.audiotrack), 'Аудио'),
   _Page((_) => DeviceListPage(), false, Icon(Icons.devices), 'Устройства'),
-  _Page((_) => SettingsPage(), false, Icon(Icons.settings), 'Настройки'),
+  _Page((_) => ProfilePage(), false, Icon(Icons.person), 'Профиль'),
 ];
 
 class HomePage extends StatefulWidget {

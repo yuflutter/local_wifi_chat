@@ -75,6 +75,7 @@ class ChatPageState extends State<ChatPage> {
                           onPressed: _messageListModel.scrollToTop,
                           tooltip: 'Имеются новые непрочитанные',
                           backgroundColor: Colors.red,
+                          mini: true,
                           child: Icon(Icons.arrow_downward),
                         ),
                       )
