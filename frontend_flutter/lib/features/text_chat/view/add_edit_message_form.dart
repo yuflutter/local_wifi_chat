@@ -109,7 +109,7 @@ class AddEditMessageForm extends StatelessWidget {
     if (model.validate()) {
       showWaitingOverlay(context);
       await model.save();
-      if (context.mounted) Navigator.pop(context);
+      if (context.mounted) hideWaitingOverlay(context);
     }
   }
 }

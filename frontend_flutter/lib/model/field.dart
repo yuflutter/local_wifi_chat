@@ -1,32 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:local_wifi_chat_frontend/core/di.dart';
 
+/// Любой валидатор должен возвращать текст ошибки, используя в том числе label валидируемого поля,
+/// поэтому сигнатуры разные - для функции, предоставленной пользователем, и для внутреннего типа.
+/// Для конвертации типов - пользовательский валидатор оборачиваем в конструкторе с использованием setValidator().
+typedef PublicValidator<T> = String? Function(T? value, String label)?;
+typedef PrivateValidator<T> = String? Function(T? value)?;
+
 /// Абстрактное поле ввода с валидацией. Используется в слое моделей, а не виджетов.
 /// Часть библиотеки BDUI.
 abstract class Field<T> implements Disposable {
   T? value;
-  final String? label;
+  final String label;
   final String? hint;
   bool hasError = false;
-  String? Function(T?)? _validator;
+  PrivateValidator<T> _validator;
 
-  String? Function(T?)? get validator => _validator;
-  set validator(String? Function(T?)? newValidator) {
-    if (newValidator != null) {
-      _validator = ((v) {
-        hasError = false;
-        final res = newValidator(v);
-        if (res != null) hasError = true;
-        return res;
-      });
-    } else {
-      _validator = null;
-    }
+  PrivateValidator<T> get validator => _validator;
+  void setValidator(PublicValidator<T>? newValidator) {
+    _validator = (newValidator != null)
+        ? (T? v) {
+            hasError = false;
+            final res = newValidator(v, label);
+            if (res != null) {
+              hasError = true;
+            } else {
+              value = v;
+            }
+            return res;
+          }
+        : null;
   }
 
-  /// Оборачиваем пользовательский валидатор, чтобы установить флаг ошибки. К сожалению, сам флаттер этого не умеет.
-  Field({this.value, this.label, this.hint, String? Function(T?)? validator}) {
-    this.validator = validator;
+  Field({this.value, required this.label, this.hint, PublicValidator<T> validator}) {
+    // здесь происходит оборачивание пользовательского валидатора с конвертацией типов
+    setValidator(validator);
   }
 
   void clear() => hasError = false;
@@ -35,27 +43,25 @@ abstract class Field<T> implements Disposable {
 /// Текстовое поле ввода с контроллером и валидацией. Используется в слое моделей, а не виджетов.
 /// Часть библиотеки BDUI.
 class StringField extends Field<String> {
-  late final controller = TextEditingController(text: value);
+  late final TextEditingController controller = TextEditingController(text: value)
+    ..addListener(() => value = controller.text);
 
-  StringField({super.value, super.label, super.hint, super.validator});
+  StringField({super.value, required super.label, super.hint, super.validator});
 
   @override
   void dispose() => controller.dispose();
 
   @override
   void clear() {
-    controller.clear();
+    controller.clear(); // value тоже сбрасывается, в listener
     super.clear();
   }
 
-  /// К сожалению требует установки в теле конструктора, так как валидация не является чистой функцией,
-  /// и меняет стейт объекта (value, hasError). Возможно, подход к валидации придется вообще изменить.
-  String? emptyStringValidator(String? v) {
-    if (v?.isEmpty ?? false) {
+  static PublicValidator<String> emptyStringValidator = (value, String label) {
+    if (value?.isEmpty ?? false) {
       return 'Поле "$label" обязательно';
     } else {
-      value = v;
       return null;
     }
-  }
+  };
 }

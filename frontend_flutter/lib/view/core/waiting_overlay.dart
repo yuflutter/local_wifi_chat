@@ -10,3 +10,5 @@ void showWaitingOverlay(BuildContext context) {
     builder: (_) => Center(child: CircularProgressIndicator()), // Пустой диалог
   );
 }
+
+void hideWaitingOverlay(BuildContext context) => (context.mounted) ? Navigator.pop(context) : null;

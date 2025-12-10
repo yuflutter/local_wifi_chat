@@ -31,7 +31,7 @@ func getDevices(w http.ResponseWriter, r *http.Request) {
 }
 
 func getConnectedDevices() ([]DeviceInfo, error) {
-	var devices []DeviceInfo
+	devices := []DeviceInfo{}
 
 	// Пробуем получить устройства через ARP таблицу
 	devicesMap := make(map[string]*DeviceInfo)

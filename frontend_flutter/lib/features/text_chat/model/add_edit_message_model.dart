@@ -10,8 +10,15 @@ class AddEditMessageModel extends AbstractModel {
   final MessageListModel _messageListModel;
   final AbstractMessagesRepository _repository;
 
-  final StringField userName = StringField(label: 'Ваше имя', hint: null, value: di<UserSession>().userName);
-  final StringField text = StringField(label: 'Текст сообщения', hint: null);
+  final StringField userName = StringField(
+    label: 'Ваше имя',
+    value: di<UserSession>().userName,
+    validator: StringField.emptyStringValidator,
+  );
+  final StringField text = StringField(
+    label: 'Текст сообщения',
+    validator: StringField.emptyStringValidator,
+  );
   String? id;
   ReplyTo? replyTo;
 
@@ -23,33 +30,12 @@ class AddEditMessageModel extends AbstractModel {
   late final FocusNode textFocusNode = FocusNode()
     ..addListener(() => (textFocusNode.hasFocus && !isFormExpanded) ? startAdding() : null);
 
-  // Валидаторы полей приходится устанавливать в теле конструктора, так как они не чистые.
   AddEditMessageModel({
     super.errorPresenter,
     MessageListModel? messageListModel,
     AbstractMessagesRepository? repository,
   }) : _messageListModel = messageListModel ?? di<MessageListModel>(),
-       _repository = repository ?? di<AbstractMessagesRepository>() {
-    userName.validator = userName.emptyStringValidator;
-    text.validator = text.emptyStringValidator;
-  }
-
-  void _clearForm() {
-    userName
-      ..clear()
-      ..value = di<UserSession>().userName;
-    text.clear();
-    id = null;
-    replyTo = null;
-  }
-
-  void clearAndCollapseForm() {
-    formKey.currentState?.reset();
-    _clearForm();
-    textFocusNode.unfocus();
-    isFormExpanded = false;
-    notifyListeners();
-  }
+       _repository = repository ?? di<AbstractMessagesRepository>();
 
   @override
   void dispose() {
@@ -59,6 +45,7 @@ class AddEditMessageModel extends AbstractModel {
   }
 
   void startAdding({Message? replyToMessage, String? replyToQuote}) async {
+    _clearForm();
     replyTo = (replyToMessage != null)
         ? ReplyTo(messageId: replyToMessage.id, userName: replyToMessage.userName, quote: replyToQuote!)
         : null;
@@ -74,6 +61,7 @@ class AddEditMessageModel extends AbstractModel {
   }
 
   void startEditing({Message? messageToEdit}) async {
+    _clearForm();
     id = messageToEdit?.id;
     userName.controller.text = messageToEdit?.userName ?? '';
     text.controller.text = messageToEdit?.text ?? '';
@@ -81,11 +69,26 @@ class AddEditMessageModel extends AbstractModel {
     notifyListeners();
     // сначала показать всю форму, и только в следующем тике поставить фокус
     await Future.delayed(Duration(milliseconds: 200));
+
     if (userName.value?.isEmpty ?? true) {
       userNameFocusNode.requestFocus();
     } else {
       textFocusNode.requestFocus();
     }
+  }
+
+  void _clearForm() {
+    text.clear();
+    id = null;
+    replyTo = null;
+  }
+
+  void clearAndCollapseForm() {
+    textFocusNode.unfocus();
+    formKey.currentState?.reset();
+    _clearForm();
+    isFormExpanded = false;
+    notifyListeners();
   }
 
   void clearReplyTo() {
