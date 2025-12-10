@@ -33,7 +33,7 @@ class _AudioPageState extends State<AudioPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Аудио-комната'),
+        title: const Text('Voice Room'),
         actions: [
           Consumer<AudioRoomProvider>(
             builder: (context, provider, _) {

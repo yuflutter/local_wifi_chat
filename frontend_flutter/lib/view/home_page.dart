@@ -14,10 +14,10 @@ class _Page {
 }
 
 final _pages = [
-  _Page((_) => ChatPage(), true, Icon(Icons.chat), 'Чат'),
-  _Page((_) => AudioPage(), false, Icon(Icons.audiotrack), 'Аудио'),
-  _Page((_) => DeviceListPage(), false, Icon(Icons.devices), 'Устройства'),
-  _Page((_) => ProfilePage(), false, Icon(Icons.person), 'Профиль'),
+  _Page((_) => ChatPage(), true, Icon(Icons.chat), 'Chat'),
+  _Page((_) => AudioPage(), false, Icon(Icons.audiotrack), 'Audio'),
+  _Page((_) => DeviceListPage(), false, Icon(Icons.devices), 'Devices'),
+  _Page((_) => ProfilePage(), false, Icon(Icons.person), 'Profile'),
 ];
 
 class HomePage extends StatefulWidget {

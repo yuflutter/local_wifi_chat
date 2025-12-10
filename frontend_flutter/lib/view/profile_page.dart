@@ -20,7 +20,7 @@ class ProfilePage extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: Text('Профиль')),
+      appBar: AppBar(title: Text('User Profile')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

@@ -28,7 +28,7 @@ class _DeviceListPageState extends State<DeviceListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Подключенные устройства'),
+        title: const Text('Connected Devices'),
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
