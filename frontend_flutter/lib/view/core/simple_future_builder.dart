@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:local_wifi_chat_frontend/view/core/error_log_widget.dart';
+import 'package:local_wifi_chat_frontend/view/core/error_log_presenter.dart';
 
-/// Синтаксический сахар для FutureBuilder.
+/// Синтаксический сахар над FutureBuilder.
 class SimpleFutureBuilder<T> extends StatelessWidget {
   final Future<T> future;
   final Widget Function(BuildContext context, T? data) builder;

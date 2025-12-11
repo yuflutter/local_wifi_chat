@@ -5,6 +5,12 @@ import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/core/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+/// Большинство ошибок мы показываем так. Исключение - ошибки инициализации приложения или страницы,
+/// которые мы показываем вместо контента, используя FutureBuilder.
+void errorLogPresenter(BuildContext context, Object e, StackTrace? s) => WidgetsBinding.instance.addPostFrameCallback(
+  (_) => showErrorLogWidget(context, error: e, stack: s),
+);
+
 void showErrorLogWidget(BuildContext context, {required Object error, StackTrace? stack}) {
   if (context.mounted) {
     showModalBottomSheet(

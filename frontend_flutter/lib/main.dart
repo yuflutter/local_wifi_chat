@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/app_config.dart';
 import 'package:local_wifi_chat_frontend/core/logger.dart';
-import 'package:local_wifi_chat_frontend/view/core/error_log_widget.dart';
+import 'package:local_wifi_chat_frontend/view/core/error_log_presenter.dart';
 import 'package:local_wifi_chat_frontend/view/home_page.dart';
 import 'package:local_wifi_chat_frontend/features/voice_room/model/voice_room_model.dart';
 

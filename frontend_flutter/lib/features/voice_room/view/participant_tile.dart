@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../model/participant.dart';
+import '../entity/participant.dart';
 
 class ParticipantTile extends StatelessWidget {
   final Participant participant;

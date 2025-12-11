@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:local_wifi_chat_frontend/core/logger.dart';
 
-import '../../view/core/error_log_widget.dart';
+import '../../view/core/error_log_presenter.dart';
 import 'abstract_crud_model.dart';
 
 /// A list widget, that implements CRUD

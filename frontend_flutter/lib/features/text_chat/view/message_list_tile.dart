@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:local_wifi_chat_frontend/features/text_chat/model/add_edit_message_model.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/model/messages.dart';
+import 'package:local_wifi_chat_frontend/features/text_chat/entity/messages.dart';
 import 'package:local_wifi_chat_frontend/features/text_chat/view/quote_widget.dart';
 import 'package:provider/provider.dart';
 

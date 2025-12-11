@@ -1,7 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/features/text_chat/model/message_list_model.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/model/messages.dart';
+import 'package:local_wifi_chat_frontend/features/text_chat/entity/messages.dart';
+import 'package:local_wifi_chat_frontend/features/text_chat/entity/repos.dart';
 import 'package:local_wifi_chat_frontend/model/abstract_model.dart';
 import 'package:local_wifi_chat_frontend/model/field.dart';
 import 'package:local_wifi_chat_frontend/user_session.dart';
@@ -10,12 +11,12 @@ class AddEditMessageModel extends AbstractModel {
   final MessageListModel _messageListModel;
   final AbstractMessagesRepository _repository;
 
-  final StringField userName = StringField(
+  final userName = StringField(
     label: 'Ваше имя',
     value: di<UserSession>().userName,
     validator: StringField.emptyStringValidator,
   );
-  final StringField text = StringField(
+  final text = StringField(
     label: 'Текст сообщения',
     validator: StringField.emptyStringValidator,
   );
@@ -25,8 +26,8 @@ class AddEditMessageModel extends AbstractModel {
   var isFormExpanded = false;
   final formKey = GlobalKey<FormState>();
 
-  /// Управление фокусом тоже перенесено в модель, так как это часть вью-логики раскрытия формы и показа ошибок.
-  final FocusNode userNameFocusNode = FocusNode();
+  /// Управление фокусом перенесено в модель, так как это часть вью-логики раскрытия формы и показа ошибок.
+  final userNameFocusNode = FocusNode();
   late final FocusNode textFocusNode = FocusNode()
     ..addListener(() => (textFocusNode.hasFocus && !isFormExpanded) ? startAdding() : null);
 
@@ -41,6 +42,8 @@ class AddEditMessageModel extends AbstractModel {
   void dispose() {
     userName.dispose();
     text.dispose();
+    userNameFocusNode.dispose();
+    textFocusNode.dispose();
     super.dispose();
   }
 
@@ -69,7 +72,6 @@ class AddEditMessageModel extends AbstractModel {
     notifyListeners();
     // сначала показать всю форму, и только в следующем тике поставить фокус
     await Future.delayed(Duration(milliseconds: 200));
-
     if (userName.value?.isEmpty ?? true) {
       userNameFocusNode.requestFocus();
     } else {

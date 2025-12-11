@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/data/api_client.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/model/messages.dart';
+import 'package:local_wifi_chat_frontend/features/text_chat/entity/messages.dart';
+import 'package:local_wifi_chat_frontend/features/text_chat/entity/repos.dart';
 
 class MessagesRepository extends AbstractMessagesRepository {
   final _api = di<ApiClient>();

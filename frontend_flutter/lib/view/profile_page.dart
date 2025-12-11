@@ -34,7 +34,7 @@ class ProfilePage extends StatelessWidget {
               },
               children: [
                 row('Flavor:', config.flavor),
-                row('User hash:', '${session.userHash.substring(0, 10)}...'),
+                row('User hash:', '${session.userHash.substring(0, 20)}...'),
                 row('User name:', session.userName),
               ],
             ),

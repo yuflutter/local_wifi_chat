@@ -1,15 +1,16 @@
 import 'dart:async';
 import 'package:local_wifi_chat_frontend/app_config.dart';
 import 'package:local_wifi_chat_frontend/core/di.dart';
+import 'package:local_wifi_chat_frontend/features/text_chat/entity/repos.dart';
 import 'package:local_wifi_chat_frontend/model/abstract_model.dart';
 
 class DeviceListModel extends AbstractModel {
-  DeviceListModel({super.errorPresenter, AbstractDevicesRepository? repository})
-    : _repository = repository ?? di<AbstractDevicesRepository>();
-
   final AbstractDevicesRepository _repository;
   var all = <String>[];
   Timer? _refreshTimer;
+
+  DeviceListModel({super.errorPresenter, AbstractDevicesRepository? repository})
+    : _repository = repository ?? di<AbstractDevicesRepository>();
 
   @override
   void dispose() {
@@ -36,8 +37,4 @@ class DeviceListModel extends AbstractModel {
       }
     });
   }
-}
-
-abstract class AbstractDevicesRepository {
-  Future<List<String>> fetch();
 }

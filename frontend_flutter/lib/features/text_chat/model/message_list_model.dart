@@ -3,7 +3,8 @@ import 'package:flutter/widgets.dart';
 import 'package:local_wifi_chat_frontend/app_config.dart';
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/core/logger.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/model/messages.dart';
+import 'package:local_wifi_chat_frontend/features/text_chat/entity/messages.dart';
+import 'package:local_wifi_chat_frontend/features/text_chat/entity/repos.dart';
 import 'package:local_wifi_chat_frontend/model/abstract_model.dart';
 
 enum _FetchMode { top, older, newer }
@@ -22,7 +23,7 @@ class MessageListModel extends AbstractModel {
   /// и принудительного скролла. Перенесено из виджета в модель, потому что это часть вью-логики.
   late final ScrollController scrollController = ScrollController()
     ..addListener(() {
-      if (scrollController.position.pixels < 10) {
+      if (scrollController.position.pixels < 20 && _existsUnread) {
         _existsUnread = false;
         notifyListeners();
       }
@@ -36,6 +37,7 @@ class MessageListModel extends AbstractModel {
   @override
   void dispose() {
     _refreshTimer?.cancel();
+    scrollController.dispose();
     super.dispose();
   }
 
@@ -101,7 +103,7 @@ class MessageListModel extends AbstractModel {
           );
           if (bath.all.isNotEmpty) {
             log.info(null, "Batch of newer loaded: ${bath.all.length} items");
-            if (scrollController.hasClients && scrollController.position.pixels > 10) {
+            if (scrollController.hasClients && scrollController.position.pixels > 20) {
               _existsUnread = true;
             }
           }

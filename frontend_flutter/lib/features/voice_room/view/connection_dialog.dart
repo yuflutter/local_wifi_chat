@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:local_wifi_chat_frontend/core/di.dart';
-import 'package:local_wifi_chat_frontend/user_session.dart';
 import 'package:provider/provider.dart';
-import '../model/voice_room_model.dart';
+import 'package:local_wifi_chat_frontend/core/di.dart';
+import 'package:local_wifi_chat_frontend/features/voice_room/model/voice_room_model.dart';
+import 'package:local_wifi_chat_frontend/user_session.dart';
+
+void showConnectionDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => const ConnectionDialog(),
+  );
+}
 
 class ConnectionDialog extends StatefulWidget {
   const ConnectionDialog({super.key});
@@ -22,7 +30,7 @@ class _ConnectionDialogState extends State<ConnectionDialog> {
   void initState() {
     super.initState();
     final session = di<UserSession>();
-    _userIdController.text = session.userHash;
+    _userIdController.text = '${session.userHash.substring(0, 20)}...';
     _userNameController.text = session.userName ?? '';
   }
 
@@ -40,8 +48,8 @@ class _ConnectionDialogState extends State<ConnectionDialog> {
     setState(() => _isConnecting = true);
 
     try {
-      final provider = context.read<VoiceRoomModel>();
-      await provider.connect(
+      final model = context.read<VoiceRoomModel>();
+      await model.connect(
         _urlController.text,
         _userIdController.text,
         _userNameController.text,
@@ -76,6 +84,21 @@ class _ConnectionDialogState extends State<ConnectionDialog> {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextFormField(
+              controller: _userNameController,
+              decoration: const InputDecoration(
+                labelText: 'Ваше имя',
+                hintText: 'Введите имя',
+                prefixIcon: Icon(Icons.person),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Введите имя';
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
               controller: _urlController,
               decoration: const InputDecoration(
                 labelText: 'URL сервера',
@@ -94,24 +117,9 @@ class _ConnectionDialogState extends State<ConnectionDialog> {
             ),
             const SizedBox(height: 16),
             TextFormField(
-              controller: _userNameController,
-              decoration: const InputDecoration(
-                labelText: 'Ваше имя',
-                hintText: 'Введите имя',
-                prefixIcon: Icon(Icons.person),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Введите имя';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
               controller: _userIdController,
               decoration: const InputDecoration(
-                labelText: 'ID пользователя',
+                labelText: 'User Hash',
                 hintText: 'Автоматически сгенерирован',
                 prefixIcon: Icon(Icons.fingerprint),
               ),

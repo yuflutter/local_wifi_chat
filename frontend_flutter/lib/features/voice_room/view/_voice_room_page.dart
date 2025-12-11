@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:local_wifi_chat_frontend/features/voice_room/entity/participant.dart';
 import 'package:provider/provider.dart';
 import '../model/voice_room_model.dart';
-import '../services/audio_room_service.dart' as audio_service;
 import 'participant_tile.dart';
 import 'connection_dialog.dart';
 
@@ -16,17 +16,9 @@ class _VoiceRoomPageState extends State<VoiceRoomPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showConnectionDialog();
-    });
-  }
-
-  void _showConnectionDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const ConnectionDialog(),
-    );
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   showConnectionDialog(context);
+    // });
   }
 
   @override
@@ -40,7 +32,7 @@ class _VoiceRoomPageState extends State<VoiceRoomPage> {
               return Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Center(
-                  child: _buildConnectionStatus(model.connectionState),
+                  child: _buildConnectionStatus(model.connectionStatus),
                 ),
               );
             },
@@ -59,7 +51,7 @@ class _VoiceRoomPageState extends State<VoiceRoomPage> {
                   const Text('Не подключено к серверу'),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: _showConnectionDialog,
+                    onPressed: () => showConnectionDialog(context),
                     child: const Text('Подключиться'),
                   ),
                 ],
@@ -108,24 +100,24 @@ class _VoiceRoomPageState extends State<VoiceRoomPage> {
     );
   }
 
-  Widget _buildConnectionStatus(audio_service.ConnectionState state) {
+  Widget _buildConnectionStatus(ConnectionStatus state) {
     Color color;
     String text;
 
     switch (state) {
-      case audio_service.ConnectionState.connected:
+      case ConnectionStatus.connected:
         color = Colors.green;
         text = 'Подключено';
         break;
-      case audio_service.ConnectionState.connecting:
+      case ConnectionStatus.connecting:
         color = Colors.orange;
         text = 'Подключение...';
         break;
-      case audio_service.ConnectionState.error:
+      case ConnectionStatus.error:
         color = Colors.red;
         text = 'Ошибка';
         break;
-      case audio_service.ConnectionState.disconnected:
+      case ConnectionStatus.disconnected:
         color = Colors.grey;
         text = 'Отключено';
         break;

@@ -72,3 +72,13 @@ class WsMessage {
     };
   }
 }
+
+class AudioChunkData {
+  final String participantId;
+  final Uint8List data;
+
+  AudioChunkData({
+    required this.participantId,
+    required this.data,
+  });
+}

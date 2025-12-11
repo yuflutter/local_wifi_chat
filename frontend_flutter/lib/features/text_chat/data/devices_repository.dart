@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/data/api_client.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/model/device_list_model.dart';
+import 'package:local_wifi_chat_frontend/features/text_chat/entity/repos.dart';
 
 class DevicesRepository extends AbstractDevicesRepository {
   final _api = di<ApiClient>();

@@ -2,14 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import '../model/participant.dart';
-import '../model/ws_message.dart';
+import '../entity/participant.dart';
+import '../entity/ws_message.dart';
 
 class AudioRoomService {
   WebSocketChannel? _channel;
   final _participantsController = StreamController<List<Participant>>.broadcast();
   final _audioChunkController = StreamController<AudioChunkData>.broadcast();
-  final _connectionStateController = StreamController<ConnectionState>.broadcast();
+  final _connectionStateController = StreamController<ConnectionStatus>.broadcast();
 
   final List<Participant> _participants = [];
   String? _currentUserId;
@@ -17,7 +17,7 @@ class AudioRoomService {
 
   Stream<List<Participant>> get participantsStream => _participantsController.stream;
   Stream<AudioChunkData> get audioChunkStream => _audioChunkController.stream;
-  Stream<ConnectionState> get connectionStateStream => _connectionStateController.stream;
+  Stream<ConnectionStatus> get connectionStateStream => _connectionStateController.stream;
 
   List<Participant> get participants => List.unmodifiable(_participants);
   bool get isConnected => _isConnected;
@@ -27,7 +27,7 @@ class AudioRoomService {
       _currentUserId = userId;
       _channel = WebSocketChannel.connect(Uri.parse(url));
 
-      _connectionStateController.add(ConnectionState.connecting);
+      _connectionStateController.add(ConnectionStatus.connecting);
 
       // Отправляем начальную информацию о пользователе
       final initMessage = WsMessage(
@@ -45,19 +45,19 @@ class AudioRoomService {
         _handleMessage,
         onError: (error) {
           _isConnected = false;
-          _connectionStateController.add(ConnectionState.error);
+          _connectionStateController.add(ConnectionStatus.error);
         },
         onDone: () {
           _isConnected = false;
-          _connectionStateController.add(ConnectionState.disconnected);
+          _connectionStateController.add(ConnectionStatus.disconnected);
         },
       );
 
       _isConnected = true;
-      _connectionStateController.add(ConnectionState.connected);
+      _connectionStateController.add(ConnectionStatus.connected);
     } catch (e) {
       _isConnected = false;
-      _connectionStateController.add(ConnectionState.error);
+      _connectionStateController.add(ConnectionStatus.error);
       rethrow;
     }
   }
@@ -169,7 +169,7 @@ class AudioRoomService {
     _channel?.sink.close();
     _isConnected = false;
     _participants.clear();
-    _connectionStateController.add(ConnectionState.disconnected);
+    _connectionStateController.add(ConnectionStatus.disconnected);
   }
 
   void dispose() {
@@ -178,21 +178,4 @@ class AudioRoomService {
     _audioChunkController.close();
     _connectionStateController.close();
   }
-}
-
-class AudioChunkData {
-  final String participantId;
-  final Uint8List data;
-
-  AudioChunkData({
-    required this.participantId,
-    required this.data,
-  });
-}
-
-enum ConnectionState {
-  disconnected,
-  connecting,
-  connected,
-  error,
 }

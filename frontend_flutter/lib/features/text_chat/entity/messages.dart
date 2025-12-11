@@ -77,12 +77,3 @@ class ReplyTo {
     'quote': quote,
   };
 }
-
-///  Интерфейс в domain, реализация в data.
-abstract class AbstractMessagesRepository {
-  Future<MessageList> fetch({Message? olderThan, Message? newerThan, required int limit, bool noLog = false});
-
-  Future<void> add(AddEditMessage newMessage);
-
-  Future<Message> edit(AddEditMessage newMessage);
-}

@@ -53,3 +53,10 @@ class Participant {
     );
   }
 }
+
+enum ConnectionStatus {
+  disconnected,
+  connecting,
+  connected,
+  error,
+}

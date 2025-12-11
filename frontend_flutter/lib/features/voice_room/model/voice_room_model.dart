@@ -1,17 +1,18 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
-import 'participant.dart';
+import 'package:local_wifi_chat_frontend/model/abstract_model.dart';
+import '../entity/participant.dart';
 import '../services/audio_room_service.dart';
 import '../services/audio_player_service.dart';
 import '../services/audio_recorder_service.dart';
 
-class VoiceRoomModel extends ChangeNotifier {
+class VoiceRoomModel extends AbstractModel {
   final AudioRoomService _roomService = AudioRoomService();
   final AudioPlayerService _playerService = AudioPlayerService();
   final AudioRecorderService _recorderService = AudioRecorderService();
 
   List<Participant> _participants = [];
-  ConnectionState _connectionState = ConnectionState.disconnected;
+  ConnectionStatus _connectionState = ConnectionStatus.disconnected;
+
   bool _isMicrophoneEnabled = false;
   String? _error;
 
@@ -21,9 +22,9 @@ class VoiceRoomModel extends ChangeNotifier {
   StreamSubscription? _recorderSubscription;
 
   List<Participant> get participants => _participants;
-  ConnectionState get connectionState => _connectionState;
+  ConnectionStatus get connectionStatus => _connectionState;
   bool get isMicrophoneEnabled => _isMicrophoneEnabled;
-  bool get isConnected => _connectionState == ConnectionState.connected;
+  bool get isConnected => _connectionState == ConnectionStatus.connected;
   String? get error => _error;
 
   Future<void> connect(String url, String userId, String userName) async {
@@ -56,14 +57,14 @@ class VoiceRoomModel extends ChangeNotifier {
 
       _connectionStateSubscription = _roomService.connectionStateStream.listen((state) {
         _connectionState = state;
-        if (state == ConnectionState.error) {
+        if (state == ConnectionStatus.error) {
           _error = 'Connection error';
         }
         notifyListeners();
       });
     } catch (e) {
       _error = e.toString();
-      _connectionState = ConnectionState.error;
+      _connectionState = ConnectionStatus.error;
       notifyListeners();
       rethrow;
     }
@@ -131,7 +132,7 @@ class VoiceRoomModel extends ChangeNotifier {
     _playerService.stopAll();
 
     _participants = [];
-    _connectionState = ConnectionState.disconnected;
+    _connectionState = ConnectionStatus.disconnected;
     _isMicrophoneEnabled = false;
     notifyListeners();
   }
