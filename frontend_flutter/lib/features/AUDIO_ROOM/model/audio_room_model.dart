@@ -16,10 +16,8 @@ class AudioRoomModel extends AbstractModel {
       print(s);
       notify(() => _socketStatus = s);
     },
-    onDone: () {
-      print('done');
-    },
     onError: (e) {
+      print(e);
       presentError(e);
       notify(() => _socketStatus = SocketStatus.disconnected);
     },
@@ -43,23 +41,19 @@ class AudioRoomModel extends AbstractModel {
 
   AudioRoomModel({super.errorPresenter});
 
+  @override
+  void dispose() {
+    disconnect();
+    _socketStatusSubscription.cancel();
+    _socketService.dispose();
+    _playerService.dispose();
+    _recorderService.dispose();
+    super.dispose();
+  }
+
   Future<void> connect(String url, String userName) async {
     try {
       await _socketService.connect(url, userName);
-
-      late final _socketStatusSubscription = _socketService.socketStatusStream.listen(
-        (s) {
-          print(s);
-          notify(() => _socketStatus = s);
-        },
-        onDone: () {
-          print('done');
-        },
-        onError: (e) {
-          presentError(e);
-          notify(() => _socketStatus = SocketStatus.disconnected);
-        },
-      );
 
       _participantsSubscription = _socketService.participantsStream.listen((participants) {
         _participants = participants;
@@ -143,7 +137,6 @@ class AudioRoomModel extends AbstractModel {
     _stopMicrophone();
     _participantsSubscription?.cancel();
     _audioChunkSubscription?.cancel();
-    _socketStatusSubscription.cancel();
     _recorderSubscription?.cancel();
 
     _socketService.disconnect();
@@ -153,14 +146,5 @@ class AudioRoomModel extends AbstractModel {
     _socketStatus = SocketStatus.disconnected;
     _isMicrophoneEnabled = false;
     notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    disconnect();
-    _socketService.dispose();
-    _playerService.dispose();
-    _recorderService.dispose();
-    super.dispose();
   }
 }

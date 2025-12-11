@@ -55,6 +55,7 @@ class SocketService {
           _socketStatusController.add(SocketStatus.disconnected);
         },
         onError: (e) {
+          log.error(null, reqNum, e);
           _isConnected = false;
           _socketStatusController.addError(e);
         },
@@ -63,9 +64,8 @@ class SocketService {
       _isConnected = true;
       _socketStatusController.add(SocketStatus.connected);
     } catch (e, s) {
-      log.apiError(null, reqNum, e, s);
       _isConnected = false;
-      rethrow;
+      throw log.apiError(null, reqNum, e, s);
     }
   }
 
