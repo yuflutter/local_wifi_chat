@@ -19,7 +19,7 @@ class _AudioRoomPageState extends State<AudioRoomPage> {
   @override
   void initState() {
     super.initState();
-    if (_model.connectionStatus == SocketStatus.disconnected) {
+    if (_model.socketStatus == SocketStatus.disconnected) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         showConnectDialog(context, model: _model);
       });
@@ -40,7 +40,7 @@ class _AudioRoomPageState extends State<AudioRoomPage> {
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Center(
-                    child: _buildConnectionStatus(_model.connectionStatus),
+                    child: _buildConnectionStatus(_model.socketStatus),
                   ),
                 ),
               ],

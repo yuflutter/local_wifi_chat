@@ -16,6 +16,7 @@ class AudioRoomModel extends AbstractModel {
       print(s);
       notify(() => _socketStatus = s);
     },
+    onDone: () => print('onDone'),
     onError: (e) {
       print(e);
       presentError(e);
@@ -35,7 +36,7 @@ class AudioRoomModel extends AbstractModel {
   StreamSubscription? _recorderSubscription;
 
   List<Participant> get participants => _participants;
-  SocketStatus get connectionStatus => _socketStatus;
+  SocketStatus get socketStatus => _socketStatus;
   bool get isMicrophoneEnabled => _isMicrophoneEnabled;
   bool get isConnected => _socketStatus == SocketStatus.connected;
 
@@ -60,21 +61,23 @@ class AudioRoomModel extends AbstractModel {
         notifyListeners();
       });
 
-      _audioChunkSubscription = _socketService.audioChunkStream.listen((chunkData) {
-        // Не воспроизводим свой собственный звук
-        // if (chunkData.participantId == userId) return;
+      _audioChunkSubscription = _socketService.audioChunkStream.listen(
+        (chunkData) {
+          // Не воспроизводим свой собственный звук
+          // if (chunkData.participantId == userId) return;
 
-        final participant = _participants.firstWhere(
-          (p) => p.id == chunkData.participantId,
-          orElse: () => Participant(id: chunkData.participantId, name: 'Unknown'),
-        );
+          final participant = _participants.firstWhere(
+            (p) => p.id == chunkData.participantId,
+            orElse: () => Participant(id: chunkData.participantId, name: 'Unknown'),
+          );
 
-        _playerService.playAudioChunk(
-          chunkData.participantId,
-          chunkData.data,
-          participant.volume,
-        );
-      });
+          _playerService.playAudioChunk(
+            chunkData.participantId,
+            chunkData.data,
+            participant.volume,
+          );
+        },
+      );
 
       di<UserSession>().setUserName(userName);
       //

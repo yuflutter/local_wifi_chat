@@ -36,7 +36,7 @@ class QuoteWidget extends StatelessWidget {
                   builder: (context) {
                     // final maxQuoteLength = di<AppConfig>().maxMessageQuoteLength;
                     // final displayText = text + ((text.length >= maxQuoteLength) ? '...' : '');
-                    final displayText = text.replaceAll('\n', ' / ');
+                    final displayText = text.replaceAll('\n', ' \\ ');
                     return Text(
                       displayText,
                       style: theme.textTheme.bodySmall,

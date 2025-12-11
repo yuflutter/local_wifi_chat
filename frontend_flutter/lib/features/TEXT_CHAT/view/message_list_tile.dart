@@ -77,7 +77,7 @@ class _MessageListTileState extends State<MessageListTile> {
                                   const SizedBox(width: 4),
                                   Expanded(
                                     child: Text(
-                                      _selectedText.replaceAll('\n', ' / '),
+                                      _selectedText.replaceAll('\n', ' \\ '),
                                       style: TextStyle(
                                         fontSize: 12,
                                         color: Colors.black,
