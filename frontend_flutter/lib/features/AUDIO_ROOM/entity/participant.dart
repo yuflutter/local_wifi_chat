@@ -54,9 +54,9 @@ class Participant {
   }
 }
 
-enum ConnectionStatus {
+enum SocketStatus {
   disconnected,
   connecting,
   connected,
-  // error,
+  // error, // Ошибки в стейте не храним, а обрабатываем одноразовым презентером модели (см. AbstractModel).
 }

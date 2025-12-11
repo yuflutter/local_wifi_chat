@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/model/audio_room_model.dart';
 import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/view/connect_dialog.dart';
 import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/view/participant_tile.dart';
-import 'package:provider/provider.dart';
 import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/entity/participant.dart';
 import 'package:local_wifi_chat_frontend/view/core/error_log_presenter.dart';
 
@@ -19,7 +19,7 @@ class _AudioRoomPageState extends State<AudioRoomPage> {
   @override
   void initState() {
     super.initState();
-    if (_model.connectionStatus == ConnectionStatus.disconnected) {
+    if (_model.connectionStatus == SocketStatus.disconnected) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         showConnectDialog(context, model: _model);
       });
@@ -100,20 +100,20 @@ class _AudioRoomPageState extends State<AudioRoomPage> {
     );
   }
 
-  Widget _buildConnectionStatus(ConnectionStatus state) {
+  Widget _buildConnectionStatus(SocketStatus state) {
     Color color;
     String text;
 
     switch (state) {
-      case ConnectionStatus.connected:
+      case SocketStatus.connected:
         color = Colors.green;
         text = 'Подключено';
         break;
-      case ConnectionStatus.connecting:
+      case SocketStatus.connecting:
         color = Colors.orange;
         text = 'Подключение...';
         break;
-      case ConnectionStatus.disconnected:
+      case SocketStatus.disconnected:
         color = Colors.grey;
         text = 'Отключено';
         break;

@@ -24,8 +24,7 @@ class MessageListModel extends AbstractModel {
   late final ScrollController scrollController = ScrollController()
     ..addListener(() {
       if (scrollController.position.pixels < 20 && _existsUnread) {
-        _existsUnread = false;
-        notifyListeners();
+        notify(() => _existsUnread = false);
       }
     });
 
@@ -135,8 +134,7 @@ class MessageListModel extends AbstractModel {
     if (i < 0) {
       return log.info(null, 'Message ${message.id} not flund in list');
     } else {
-      list.all[i] = message;
-      notifyListeners();
+      notify(() => list.all[i] = message);
     }
   }
 }

@@ -10,29 +10,31 @@ import 'package:local_wifi_chat_frontend/user_session.dart';
 
 class SocketService {
   WebSocketChannel? _socket;
-  final _connectionStatusController = StreamController<ConnectionStatus>.broadcast();
+  final _socketStatusController = StreamController<SocketStatus>.broadcast();
+  Stream<SocketStatus> get socketStatusStream => _socketStatusController.stream;
+
   final _participantsController = StreamController<List<Participant>>.broadcast();
+  Stream<List<Participant>> get participantsStream => _participantsController.stream;
+
   final _audioChunkController = StreamController<AudioChunkData>.broadcast();
+  Stream<AudioChunkData> get audioChunkStream => _audioChunkController.stream;
 
   final List<Participant> _participants = [];
   final _userId = di<UserSession>().userHash;
   bool _isConnected = false;
-
-  Stream<List<Participant>> get participantsStream => _participantsController.stream;
-  Stream<AudioChunkData> get audioChunkStream => _audioChunkController.stream;
-  Stream<ConnectionStatus> get connectionStatusStream => _connectionStatusController.stream;
 
   List<Participant> get participants => List.unmodifiable(_participants);
   bool get isConnected => _isConnected;
 
   Future<void> connect(String url, String userName) async {
     final reqNum = log.apiReq('WS CONNECT', url);
-    _connectionStatusController.add(ConnectionStatus.connecting);
+    _socketStatusController.add(SocketStatus.connecting);
+
     try {
+      await Future.delayed(Duration(seconds: 2));
       _socket = WebSocketChannel.connect(Uri.parse(url));
       await _socket!.ready;
       log.apiRes(reqNum, 'CONNECTED');
-      _connectionStatusController.add(ConnectionStatus.connected);
 
       // Отправляем начальную информацию о пользователе
       final initMessage = WsMessage(
@@ -50,16 +52,16 @@ class SocketService {
         _handleMessage,
         onDone: () {
           _isConnected = false;
-          _connectionStatusController.add(ConnectionStatus.disconnected);
+          _socketStatusController.add(SocketStatus.disconnected);
         },
         onError: (e) {
           _isConnected = false;
-          _connectionStatusController.addError(e);
+          _socketStatusController.addError(e);
         },
       );
 
       _isConnected = true;
-      _connectionStatusController.add(ConnectionStatus.connected);
+      _socketStatusController.add(SocketStatus.connected);
     } catch (e, s) {
       log.apiError(null, reqNum, e, s);
       _isConnected = false;
@@ -174,13 +176,13 @@ class SocketService {
     _socket?.sink.close();
     _isConnected = false;
     _participants.clear();
-    _connectionStatusController.add(ConnectionStatus.disconnected);
+    _socketStatusController.add(SocketStatus.disconnected);
   }
 
   void dispose() {
     disconnect();
     _participantsController.close();
     _audioChunkController.close();
-    _connectionStatusController.close();
+    _socketStatusController.close();
   }
 }

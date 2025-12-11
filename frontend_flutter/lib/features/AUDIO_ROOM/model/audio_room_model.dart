@@ -8,14 +8,20 @@ import 'package:local_wifi_chat_frontend/model/abstract_model.dart';
 import 'package:local_wifi_chat_frontend/user_session.dart';
 
 class AudioRoomModel extends AbstractModel {
-  ConnectionStatus _connectionState = ConnectionStatus.disconnected;
+  SocketStatus _socketStatus = SocketStatus.disconnected;
 
   final _socketService = SocketService();
-  late final _connectionStatusSubscription = _socketService.connectionStatusStream.listen(
-    (s) => notify(() => _connectionState = s),
+  late final _socketStatusSubscription = _socketService.socketStatusStream.listen(
+    (s) {
+      print(s);
+      notify(() => _socketStatus = s);
+    },
+    onDone: () {
+      print('done');
+    },
     onError: (e) {
       presentError(e);
-      notify(() => _connectionState = ConnectionStatus.disconnected);
+      notify(() => _socketStatus = SocketStatus.disconnected);
     },
   );
 
@@ -31,15 +37,29 @@ class AudioRoomModel extends AbstractModel {
   StreamSubscription? _recorderSubscription;
 
   List<Participant> get participants => _participants;
-  ConnectionStatus get connectionStatus => _connectionState;
+  SocketStatus get connectionStatus => _socketStatus;
   bool get isMicrophoneEnabled => _isMicrophoneEnabled;
-  bool get isConnected => _connectionState == ConnectionStatus.connected;
+  bool get isConnected => _socketStatus == SocketStatus.connected;
 
   AudioRoomModel({super.errorPresenter});
 
   Future<void> connect(String url, String userName) async {
     try {
       await _socketService.connect(url, userName);
+
+      late final _socketStatusSubscription = _socketService.socketStatusStream.listen(
+        (s) {
+          print(s);
+          notify(() => _socketStatus = s);
+        },
+        onDone: () {
+          print('done');
+        },
+        onError: (e) {
+          presentError(e);
+          notify(() => _socketStatus = SocketStatus.disconnected);
+        },
+      );
 
       _participantsSubscription = _socketService.participantsStream.listen((participants) {
         _participants = participants;
@@ -66,7 +86,7 @@ class AudioRoomModel extends AbstractModel {
       //
     } catch (e, s) {
       presentError(e, s);
-      _connectionState = ConnectionStatus.disconnected;
+      _socketStatus = SocketStatus.disconnected;
       rethrow;
     }
   }
@@ -123,14 +143,14 @@ class AudioRoomModel extends AbstractModel {
     _stopMicrophone();
     _participantsSubscription?.cancel();
     _audioChunkSubscription?.cancel();
-    _connectionStatusSubscription.cancel();
+    _socketStatusSubscription.cancel();
     _recorderSubscription?.cancel();
 
     _socketService.disconnect();
     _playerService.stopAll();
 
     _participants = [];
-    _connectionState = ConnectionStatus.disconnected;
+    _socketStatus = SocketStatus.disconnected;
     _isMicrophoneEnabled = false;
     notifyListeners();
   }
