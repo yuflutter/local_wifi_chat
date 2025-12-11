@@ -32,7 +32,7 @@ class ApiClient implements Initializable {
       // Если запрос не залогирован, но выполнен с ошибкой -
       // принудительно логируем запрос перед логированием ответа и выбросом ошибки.
       final newReqNum = reqNum ?? reqLogFunc();
-      throw log.error(null, e, s, apiReqNum: newReqNum);
+      throw log.apiError(newReqNum, e, s);
     }
   }
 
@@ -77,7 +77,7 @@ class ApiClient implements Initializable {
       return parser(res.body);
       //
     } catch (e, s) {
-      throw log.error(null, e, s, apiReqNum: reqNum);
+      throw log.apiError(reqNum, e, s);
     }
   }
 

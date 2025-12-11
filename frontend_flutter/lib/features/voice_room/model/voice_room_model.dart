@@ -1,20 +1,30 @@
 import 'dart:async';
+import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/model/abstract_model.dart';
+import 'package:local_wifi_chat_frontend/user_session.dart';
 import '../entity/participant.dart';
 import '../services/audio_room_service.dart';
 import '../services/audio_player_service.dart';
 import '../services/audio_recorder_service.dart';
 
 class VoiceRoomModel extends AbstractModel {
-  final AudioRoomService _roomService = AudioRoomService();
+  ConnectionStatus _connectionState = ConnectionStatus.disconnected;
+
+  late final AudioRoomService _roomService = AudioRoomService()
+    ..connectionStateStream.listen(
+      (s) => notify(() => _connectionState = s),
+      onError: (e) {
+        presentError(e);
+        notify(() => _connectionState = ConnectionStatus.disconnected);
+      },
+    );
+
   final AudioPlayerService _playerService = AudioPlayerService();
   final AudioRecorderService _recorderService = AudioRecorderService();
 
   List<Participant> _participants = [];
-  ConnectionStatus _connectionState = ConnectionStatus.disconnected;
 
   bool _isMicrophoneEnabled = false;
-  String? _error;
 
   StreamSubscription? _participantsSubscription;
   StreamSubscription? _audioChunkSubscription;
@@ -25,14 +35,12 @@ class VoiceRoomModel extends AbstractModel {
   ConnectionStatus get connectionStatus => _connectionState;
   bool get isMicrophoneEnabled => _isMicrophoneEnabled;
   bool get isConnected => _connectionState == ConnectionStatus.connected;
-  String? get error => _error;
 
-  Future<void> connect(String url, String userId, String userName) async {
+  VoiceRoomModel({super.errorPresenter});
+
+  Future<void> connect(String url, String userName) async {
     try {
-      _error = null;
-      notifyListeners();
-
-      await _roomService.connect(url, userId, userName);
+      await _roomService.connect(url, userName);
 
       _participantsSubscription = _roomService.participantsStream.listen((participants) {
         _participants = participants;
@@ -55,17 +63,10 @@ class VoiceRoomModel extends AbstractModel {
         );
       });
 
-      _connectionStateSubscription = _roomService.connectionStateStream.listen((state) {
-        _connectionState = state;
-        if (state == ConnectionStatus.error) {
-          _error = 'Connection error';
-        }
-        notifyListeners();
-      });
-    } catch (e) {
-      _error = e.toString();
-      _connectionState = ConnectionStatus.error;
-      notifyListeners();
+      di<UserSession>().setUserName(userName);
+    } catch (e, s) {
+      presentError(e, s);
+      _connectionState = ConnectionStatus.disconnected;
       rethrow;
     }
   }
@@ -82,8 +83,7 @@ class VoiceRoomModel extends AbstractModel {
     try {
       final hasPermission = await _recorderService.requestPermission();
       if (!hasPermission) {
-        _error = 'Microphone permission denied';
-        notifyListeners();
+        presentError('Microphone permission denied');
         return;
       }
 
@@ -97,8 +97,7 @@ class VoiceRoomModel extends AbstractModel {
       _roomService.updateMicrophoneStatus(false);
       notifyListeners();
     } catch (e) {
-      _error = 'Failed to start microphone: $e';
-      notifyListeners();
+      presentError('Failed to start microphone: $e');
     }
   }
 

@@ -115,6 +115,10 @@ abstract class Logger implements Initializable {
     return HumanError(title: title, text: errorText, origin: logEntry);
   }
 
+  /// Логирует ошибку API.
+  HumanError apiError(int? reqNum, Object error, StackTrace? stack) =>
+      this.error(null, error, stack, apiReqNum: reqNum);
+
   /// Переопределить реализацию логирования
   void log(LogEntry entry);
 }

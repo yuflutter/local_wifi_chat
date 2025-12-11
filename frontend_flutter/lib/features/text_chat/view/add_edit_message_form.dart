@@ -111,6 +111,7 @@ class AddEditMessageForm extends StatelessWidget {
     if (model.validate()) {
       showWaitingOverlay(context);
       await model.save();
+      // ошибка презентуется в модели
       if (context.mounted) hideWaitingOverlay(context);
     }
   }

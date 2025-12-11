@@ -79,7 +79,7 @@ class MessageListModel extends AbstractModel {
       switch (fetchMode) {
         case _FetchMode.top:
           final bath = await _repository.fetch(limit: defaultLimit);
-          log.info(null, "Top batch loaded: ${bath.all.length} items");
+          // log.info(null, "Top batch loaded: ${bath.all.length} items");
           list = bath;
 
         case _FetchMode.older:
@@ -88,7 +88,7 @@ class MessageListModel extends AbstractModel {
             limit: defaultLimit,
           );
           if (bath.all.isNotEmpty) {
-            log.info(null, "Batch of older loaded: ${bath.all.length} items");
+            // log.info(null, "Batch of older loaded: ${bath.all.length} items");
           }
           list = MessageList(
             all: list.all + _cleanOfDuplicates(bath.all, origin: list.all),
@@ -102,7 +102,7 @@ class MessageListModel extends AbstractModel {
             noLog: true,
           );
           if (bath.all.isNotEmpty) {
-            log.info(null, "Batch of newer loaded: ${bath.all.length} items");
+            // pring(null, "Batch of newer loaded: ${bath.all.length} items");
             if (scrollController.hasClients && scrollController.position.pixels > 20) {
               _existsUnread = true;
             }

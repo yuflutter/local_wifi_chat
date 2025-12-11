@@ -1,30 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:local_wifi_chat_frontend/view/core/waiting_overlay.dart';
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/features/voice_room/model/voice_room_model.dart';
 import 'package:local_wifi_chat_frontend/user_session.dart';
 
-void showConnectionDialog(BuildContext context) {
+void showConnectDialog(BuildContext context) {
+  final model = context.read<VoiceRoomModel>();
   showDialog(
     context: context,
-    barrierDismissible: false,
-    builder: (_) => const ConnectionDialog(),
+    barrierDismissible: true,
+    builder: (_) => ChangeNotifierProvider.value(value: model, child: const ConnectDialog()),
   );
 }
 
-class ConnectionDialog extends StatefulWidget {
-  const ConnectionDialog({super.key});
+class ConnectDialog extends StatefulWidget {
+  const ConnectDialog({super.key});
 
   @override
-  State<ConnectionDialog> createState() => _ConnectionDialogState();
+  State<ConnectDialog> createState() => _ConnectDialogState();
 }
 
-class _ConnectionDialogState extends State<ConnectionDialog> {
+class _ConnectDialogState extends State<ConnectDialog> {
   final _formKey = GlobalKey<FormState>();
   final _urlController = TextEditingController(text: 'ws://localhost:8080/audio');
   final _userIdController = TextEditingController();
   final _userNameController = TextEditingController();
-  bool _isConnecting = false;
 
   @override
   void initState() {
@@ -43,34 +44,18 @@ class _ConnectionDialogState extends State<ConnectionDialog> {
   }
 
   Future<void> _connect() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _isConnecting = true);
-
-    try {
-      final model = context.read<VoiceRoomModel>();
-      await model.connect(
-        _urlController.text,
-        _userIdController.text,
-        _userNameController.text,
-      );
-
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Ошибка подключения: $e'),
-            backgroundColor: Colors.red,
-          ),
+    if (_formKey.currentState!.validate()) {
+      showWaitingOverlay(context);
+      try {
+        await context.read<VoiceRoomModel>().connect(
+          _urlController.text,
+          _userNameController.text,
         );
+        if (mounted) Navigator.pop(context);
+      } catch (_) {
+        // ошибка презентуется в модели
       }
-    } finally {
-      if (mounted) {
-        setState(() => _isConnecting = false);
-      }
+      if (mounted) hideWaitingOverlay(context);
     }
   }
 
@@ -85,6 +70,7 @@ class _ConnectionDialogState extends State<ConnectionDialog> {
           children: [
             TextFormField(
               controller: _userNameController,
+              autofocus: true,
               decoration: const InputDecoration(
                 labelText: 'Ваше имя',
                 hintText: 'Введите имя',
@@ -130,18 +116,12 @@ class _ConnectionDialogState extends State<ConnectionDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: _isConnecting ? null : () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.of(context).pop(),
           child: const Text('Отмена'),
         ),
         ElevatedButton(
-          onPressed: _isConnecting ? null : _connect,
-          child: _isConnecting
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Подключиться'),
+          onPressed: _connect,
+          child: const Text('Подключиться'),
         ),
       ],
     );

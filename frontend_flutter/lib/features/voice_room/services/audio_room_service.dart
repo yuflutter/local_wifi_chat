@@ -1,63 +1,68 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:local_wifi_chat_frontend/core/di.dart';
+import 'package:local_wifi_chat_frontend/core/logger.dart';
+import 'package:local_wifi_chat_frontend/user_session.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../entity/participant.dart';
 import '../entity/ws_message.dart';
 
 class AudioRoomService {
-  WebSocketChannel? _channel;
+  WebSocketChannel? _socket;
   final _participantsController = StreamController<List<Participant>>.broadcast();
   final _audioChunkController = StreamController<AudioChunkData>.broadcast();
-  final _connectionStateController = StreamController<ConnectionStatus>.broadcast();
+  final _connectionStatusController = StreamController<ConnectionStatus>.broadcast();
 
   final List<Participant> _participants = [];
-  String? _currentUserId;
+  final _userId = di<UserSession>().userHash;
   bool _isConnected = false;
 
   Stream<List<Participant>> get participantsStream => _participantsController.stream;
   Stream<AudioChunkData> get audioChunkStream => _audioChunkController.stream;
-  Stream<ConnectionStatus> get connectionStateStream => _connectionStateController.stream;
+  Stream<ConnectionStatus> get connectionStateStream => _connectionStatusController.stream;
 
   List<Participant> get participants => List.unmodifiable(_participants);
   bool get isConnected => _isConnected;
 
-  Future<void> connect(String url, String userId, String userName) async {
+  Future<void> connect(String url, String userName) async {
+    final reqNum = log.apiReq('WS', url);
     try {
-      _currentUserId = userId;
-      _channel = WebSocketChannel.connect(Uri.parse(url));
+      _socket = WebSocketChannel.connect(Uri.parse(url));
+      await _socket!.ready;
+      log.apiRes(reqNum, 'OK');
 
-      _connectionStateController.add(ConnectionStatus.connecting);
+      _connectionStatusController.add(ConnectionStatus.connecting);
 
       // Отправляем начальную информацию о пользователе
       final initMessage = WsMessage(
         type: MessageType.metadata,
         data: {
-          'userId': userId,
+          'userId': _userId,
           'userName': userName,
           'action': 'join',
         },
       );
 
-      _channel!.sink.add(jsonEncode(initMessage.toJson()));
+      _socket!.sink.add(jsonEncode(initMessage.toJson()));
 
-      _channel!.stream.listen(
+      _socket!.stream.listen(
         _handleMessage,
-        onError: (error) {
+        onError: (e) {
           _isConnected = false;
-          _connectionStateController.add(ConnectionStatus.error);
+          _connectionStatusController.addError(e);
         },
         onDone: () {
           _isConnected = false;
-          _connectionStateController.add(ConnectionStatus.disconnected);
+          _connectionStatusController.add(ConnectionStatus.disconnected);
         },
       );
 
       _isConnected = true;
-      _connectionStateController.add(ConnectionStatus.connected);
-    } catch (e) {
+      _connectionStatusController.add(ConnectionStatus.connected);
+    } catch (e, s) {
+      log.apiError(reqNum, e, s);
       _isConnected = false;
-      _connectionStateController.add(ConnectionStatus.error);
       rethrow;
     }
   }
@@ -130,27 +135,27 @@ class AudioRoomService {
   }
 
   void sendAudioChunk(Uint8List audioData) {
-    if (!_isConnected || _channel == null || _currentUserId == null) return;
+    if (!_isConnected || _socket == null) return;
 
     // Добавляем ID пользователя к аудио данным
-    final userIdBytes = Uint8List.fromList(_currentUserId!.padRight(36).codeUnits);
+    final userIdBytes = Uint8List.fromList(_userId.padRight(36).codeUnits);
     final message = Uint8List.fromList([...userIdBytes, ...audioData]);
 
-    _channel!.sink.add(message);
+    _socket!.sink.add(message);
   }
 
   void updateMicrophoneStatus(bool isMuted) {
-    if (!_isConnected || _channel == null) return;
+    if (!_isConnected || _socket == null) return;
 
     final message = WsMessage(
       type: MessageType.participantUpdate,
       data: {
-        'userId': _currentUserId,
+        'userId': _userId,
         'isMuted': isMuted,
       },
     );
 
-    _channel!.sink.add(jsonEncode(message.toJson()));
+    _socket!.sink.add(jsonEncode(message.toJson()));
   }
 
   void updateParticipantVolume(String participantId, double volume) {
@@ -166,16 +171,16 @@ class AudioRoomService {
   }
 
   void disconnect() {
-    _channel?.sink.close();
+    _socket?.sink.close();
     _isConnected = false;
     _participants.clear();
-    _connectionStateController.add(ConnectionStatus.disconnected);
+    _connectionStatusController.add(ConnectionStatus.disconnected);
   }
 
   void dispose() {
     disconnect();
     _participantsController.close();
     _audioChunkController.close();
-    _connectionStateController.close();
+    _connectionStatusController.close();
   }
 }

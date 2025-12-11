@@ -7,6 +7,7 @@ abstract class AbstractModel with ChangeNotifier {
   /// Это решает проблему сброса состояния ошибки, потому что само состояние отсутствует.
   void Function(Object, StackTrace?)? errorPresenter;
   bool _isWaiting = false;
+  bool get isWaiting => _isWaiting;
 
   AbstractModel({this.errorPresenter});
 
@@ -16,7 +17,10 @@ abstract class AbstractModel with ChangeNotifier {
 
   void presentError(Object e, [StackTrace? stack]) => (errorPresenter != null) ? errorPresenter!(e, stack) : null;
 
-  bool get isWaiting => _isWaiting;
+  void notify(void Function() what) {
+    what();
+    notifyListeners();
+  }
 
   void startWaiting() {
     _isWaiting = true;

@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/app_config.dart';
 import 'package:local_wifi_chat_frontend/core/logger.dart';
 import 'package:local_wifi_chat_frontend/view/core/error_log_presenter.dart';
-import 'package:local_wifi_chat_frontend/view/home_page.dart';
-import 'package:local_wifi_chat_frontend/features/voice_room/model/voice_room_model.dart';
+import 'package:local_wifi_chat_frontend/view/__home_page.dart';
 
 (Object, StackTrace?)? _initError;
 
@@ -32,15 +30,10 @@ class MyApp extends StatelessWidget {
       );
       //
     } else {
-      return MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => VoiceRoomModel()),
-        ],
-        child: MaterialApp(
-          title: di<AppConfig>().appName,
-          theme: _appTheme,
-          home: const HomePage(),
-        ),
+      return MaterialApp(
+        title: di<AppConfig>().appName,
+        theme: _appTheme,
+        home: const HomePage(),
       );
     }
   }
