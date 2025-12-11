@@ -105,19 +105,23 @@ abstract class Logger implements Initializable {
   }
 
   /// Логирует ошибку, возвращает объект для проброса наверх и показа пользователю.
-  HumanError error(String? title, Object error, StackTrace? stack, {int? apiReqNum}) {
+  HumanError error(String? title, Object error, StackTrace? stack) {
     // если ошибка связана с ответом API - используем в заголовке номер соотв. запроса API
-    final logEntryTitle = (title == null && apiReqNum != null) ? _apiResTitle(apiReqNum) : title;
+    final errorText = error.toString();
+    final logEntry = ErrorLogEntry(title: title, text: errorText, details: stack.toString());
+    log(logEntry);
+    return HumanError(title: title, text: errorText, origin: logEntry);
+  }
+
+  /// Логирует ошибку API.
+  HumanError apiError(String? title, int reqNum, Object error, StackTrace? stack) {
+    final logEntryTitle = _apiResTitle(reqNum);
     final errorText = error.toString();
     final logEntry = ErrorLogEntry(title: logEntryTitle, text: errorText, details: stack.toString());
     log(logEntry);
     // а здесь оставляем пользовательский заголовок, даже если он null
     return HumanError(title: title, text: errorText, origin: logEntry);
   }
-
-  /// Логирует ошибку API.
-  HumanError apiError(int? reqNum, Object error, StackTrace? stack) =>
-      this.error(null, error, stack, apiReqNum: reqNum);
 
   /// Переопределить реализацию логирования
   void log(LogEntry entry);

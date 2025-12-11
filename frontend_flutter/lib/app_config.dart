@@ -1,7 +1,7 @@
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/data/api_client.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/data/devices_repository.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/data/messages_repository.dart';
+import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/data/devices_repository.dart';
+import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/data/messages_repository.dart';
 import 'package:local_wifi_chat_frontend/user_session.dart';
 
 // Вариант конфигурации (flavor) берет из командной строки --dart-define=FLAVOR=RELASE

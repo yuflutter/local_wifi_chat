@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:local_wifi_chat_frontend/app_config.dart';
 import 'package:local_wifi_chat_frontend/core/di.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/entity/repos.dart';
+import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/entity/repos.dart';
 import 'package:local_wifi_chat_frontend/model/abstract_model.dart';
 
 class DeviceListModel extends AbstractModel {

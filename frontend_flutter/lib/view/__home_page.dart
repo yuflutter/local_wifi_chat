@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/view/__text_chat_page.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/view/device_list_page.dart';
-import 'package:local_wifi_chat_frontend/features/voice_room/view/__voice_room_page.dart';
+import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/view/__text_chat_page.dart';
+import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/view/device_list_page.dart';
+import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/view/__audio_room_page.dart';
 import 'package:local_wifi_chat_frontend/view/profile_page.dart';
 
 class _Page {
@@ -15,7 +15,7 @@ class _Page {
 
 final _pages = [
   _Page((_) => TextChatPage(), true, Icon(Icons.chat), 'Chat'),
-  _Page((_) => VoiceRoomPage(), false, Icon(Icons.audiotrack), 'Audio'),
+  _Page((_) => AudioRoomPage(), false, Icon(Icons.audiotrack), 'Audio'),
   _Page((_) => DeviceListPage(), false, Icon(Icons.devices), 'Devices'),
   _Page((_) => ProfilePage(), false, Icon(Icons.person), 'Profile'),
 ];

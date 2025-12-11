@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:local_wifi_chat_frontend/view/core/waiting_overlay.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/model/add_edit_message_model.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/view/quote_widget.dart';
+import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/model/add_edit_message_model.dart';
+import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/view/quote_widget.dart';
 
 class AddEditMessageForm extends StatelessWidget {
   const AddEditMessageForm({super.key});
@@ -111,7 +111,7 @@ class AddEditMessageForm extends StatelessWidget {
     if (model.validate()) {
       showWaitingOverlay(context);
       await model.save();
-      // ошибка презентуется в модели
+      // ошибка уже презентуется в модели
       if (context.mounted) hideWaitingOverlay(context);
     }
   }

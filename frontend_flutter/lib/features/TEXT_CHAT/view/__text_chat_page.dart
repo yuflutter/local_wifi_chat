@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:local_wifi_chat_frontend/app_config.dart';
 import 'package:local_wifi_chat_frontend/core/di.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/model/add_edit_message_model.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/model/message_list_model.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/view/add_edit_message_form.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/view/message_list_widget.dart';
+import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/model/add_edit_message_model.dart';
+import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/model/message_list_model.dart';
+import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/view/add_edit_message_form.dart';
+import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/view/message_list_widget.dart';
 import 'package:local_wifi_chat_frontend/view/core/error_log_presenter.dart';
 import 'package:local_wifi_chat_frontend/view/core/simple_future_builder.dart';
 

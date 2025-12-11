@@ -1,18 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/core/logger.dart';
+import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/entity/participant.dart';
+import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/entity/ws_message.dart';
 import 'package:local_wifi_chat_frontend/user_session.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
-import '../entity/participant.dart';
-import '../entity/ws_message.dart';
 
-class AudioRoomService {
+class SocketService {
   WebSocketChannel? _socket;
+  final _connectionStatusController = StreamController<ConnectionStatus>.broadcast();
   final _participantsController = StreamController<List<Participant>>.broadcast();
   final _audioChunkController = StreamController<AudioChunkData>.broadcast();
-  final _connectionStatusController = StreamController<ConnectionStatus>.broadcast();
 
   final List<Participant> _participants = [];
   final _userId = di<UserSession>().userHash;
@@ -20,19 +20,19 @@ class AudioRoomService {
 
   Stream<List<Participant>> get participantsStream => _participantsController.stream;
   Stream<AudioChunkData> get audioChunkStream => _audioChunkController.stream;
-  Stream<ConnectionStatus> get connectionStateStream => _connectionStatusController.stream;
+  Stream<ConnectionStatus> get connectionStatusStream => _connectionStatusController.stream;
 
   List<Participant> get participants => List.unmodifiable(_participants);
   bool get isConnected => _isConnected;
 
   Future<void> connect(String url, String userName) async {
-    final reqNum = log.apiReq('WS', url);
+    final reqNum = log.apiReq('WS CONNECT', url);
+    _connectionStatusController.add(ConnectionStatus.connecting);
     try {
       _socket = WebSocketChannel.connect(Uri.parse(url));
       await _socket!.ready;
-      log.apiRes(reqNum, 'OK');
-
-      _connectionStatusController.add(ConnectionStatus.connecting);
+      log.apiRes(reqNum, 'CONNECTED');
+      _connectionStatusController.add(ConnectionStatus.connected);
 
       // Отправляем начальную информацию о пользователе
       final initMessage = WsMessage(
@@ -48,20 +48,20 @@ class AudioRoomService {
 
       _socket!.stream.listen(
         _handleMessage,
-        onError: (e) {
-          _isConnected = false;
-          _connectionStatusController.addError(e);
-        },
         onDone: () {
           _isConnected = false;
           _connectionStatusController.add(ConnectionStatus.disconnected);
+        },
+        onError: (e) {
+          _isConnected = false;
+          _connectionStatusController.addError(e);
         },
       );
 
       _isConnected = true;
       _connectionStatusController.add(ConnectionStatus.connected);
     } catch (e, s) {
-      log.apiError(reqNum, e, s);
+      log.apiError(null, reqNum, e, s);
       _isConnected = false;
       rethrow;
     }

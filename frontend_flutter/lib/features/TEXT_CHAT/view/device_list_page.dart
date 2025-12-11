@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:local_wifi_chat_frontend/view/core/simple_future_builder.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/model/device_list_model.dart';
+import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/model/device_list_model.dart';
 import 'package:local_wifi_chat_frontend/view/core/error_log_presenter.dart';
 
 class DeviceListPage extends StatefulWidget {

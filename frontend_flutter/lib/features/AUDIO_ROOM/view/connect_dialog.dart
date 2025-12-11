@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:local_wifi_chat_frontend/view/core/waiting_overlay.dart';
 import 'package:local_wifi_chat_frontend/core/di.dart';
-import 'package:local_wifi_chat_frontend/features/voice_room/model/voice_room_model.dart';
+import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/model/audio_room_model.dart';
 import 'package:local_wifi_chat_frontend/user_session.dart';
 
-void showConnectDialog(BuildContext context) {
-  final model = context.read<VoiceRoomModel>();
+void showConnectDialog(BuildContext context, {required AudioRoomModel model}) {
   showDialog(
     context: context,
     barrierDismissible: true,
@@ -31,7 +30,7 @@ class _ConnectDialogState extends State<ConnectDialog> {
   void initState() {
     super.initState();
     final session = di<UserSession>();
-    _userIdController.text = '${session.userHash.substring(0, 20)}...';
+    _userIdController.text = session.userId;
     _userNameController.text = session.userName ?? '';
   }
 
@@ -47,15 +46,15 @@ class _ConnectDialogState extends State<ConnectDialog> {
     if (_formKey.currentState!.validate()) {
       showWaitingOverlay(context);
       try {
-        await context.read<VoiceRoomModel>().connect(
+        await context.read<AudioRoomModel>().connect(
           _urlController.text,
           _userNameController.text,
         );
         if (mounted) Navigator.pop(context);
       } catch (_) {
-        // ошибка презентуется в модели
+        // ошибка уже презентуется в модели
       }
-      if (mounted) hideWaitingOverlay(context);
+      if (mounted) Navigator.pop(context);
     }
   }
 
@@ -105,7 +104,7 @@ class _ConnectDialogState extends State<ConnectDialog> {
             TextFormField(
               controller: _userIdController,
               decoration: const InputDecoration(
-                labelText: 'User Hash',
+                labelText: 'User ID',
                 hintText: 'Автоматически сгенерирован',
                 prefixIcon: Icon(Icons.fingerprint),
               ),
@@ -116,7 +115,7 @@ class _ConnectDialogState extends State<ConnectDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.pop(context),
           child: const Text('Отмена'),
         ),
         ElevatedButton(

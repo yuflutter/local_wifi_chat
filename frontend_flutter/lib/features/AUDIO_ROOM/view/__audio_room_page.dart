@@ -1,33 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:local_wifi_chat_frontend/features/voice_room/entity/participant.dart';
-import 'package:local_wifi_chat_frontend/view/core/error_log_presenter.dart';
+import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/model/audio_room_model.dart';
+import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/view/connect_dialog.dart';
+import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/view/participant_tile.dart';
 import 'package:provider/provider.dart';
-import '../model/voice_room_model.dart';
-import 'participant_tile.dart';
-import 'connect_dialog.dart';
+import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/entity/participant.dart';
+import 'package:local_wifi_chat_frontend/view/core/error_log_presenter.dart';
 
-class VoiceRoomPage extends StatefulWidget {
-  const VoiceRoomPage({super.key});
+class AudioRoomPage extends StatefulWidget {
+  const AudioRoomPage({super.key});
 
   @override
-  State<VoiceRoomPage> createState() => _VoiceRoomPageState();
+  State<AudioRoomPage> createState() => _AudioRoomPageState();
 }
 
-class _VoiceRoomPageState extends State<VoiceRoomPage> {
-  late final _model = VoiceRoomModel(errorPresenter: (e, s) => errorLogPresenter(context, e, s));
+class _AudioRoomPageState extends State<AudioRoomPage> {
+  late final _model = AudioRoomModel(errorPresenter: (e, s) => errorLogPresenter(context, e, s));
 
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   showConnectionDialog(context);
-    // });
+    if (_model.connectionStatus == ConnectionStatus.disconnected) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showConnectDialog(context, model: _model);
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [ChangeNotifierProvider.value(value: _model)],
+    return ChangeNotifierProvider.value(
+      value: _model,
       child: ListenableBuilder(
         listenable: _model,
         builder: (context, _) {
@@ -53,7 +55,7 @@ class _VoiceRoomPageState extends State<VoiceRoomPage> {
                         const Text('Не подключено к серверу'),
                         const SizedBox(height: 16),
                         ElevatedButton(
-                          onPressed: () => showConnectDialog(context),
+                          onPressed: () => showConnectDialog(context, model: _model),
                           child: const Text('Подключиться'),
                         ),
                       ],
@@ -79,7 +81,7 @@ class _VoiceRoomPageState extends State<VoiceRoomPage> {
                       );
                     },
                   ),
-            floatingActionButton: Consumer<VoiceRoomModel>(
+            floatingActionButton: Consumer<AudioRoomModel>(
               builder: (context, model, _) {
                 if (!model.isConnected) return const SizedBox.shrink();
                 return FloatingActionButton.large(

@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:local_wifi_chat_frontend/core/di.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/model/message_list_model.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/entity/messages.dart';
-import 'package:local_wifi_chat_frontend/features/text_chat/entity/repos.dart';
+import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/model/message_list_model.dart';
+import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/entity/messages.dart';
+import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/entity/repos.dart';
 import 'package:local_wifi_chat_frontend/model/abstract_model.dart';
 import 'package:local_wifi_chat_frontend/model/field.dart';
 import 'package:local_wifi_chat_frontend/user_session.dart';

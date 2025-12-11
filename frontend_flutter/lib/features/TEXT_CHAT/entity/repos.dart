@@ -1,4 +1,4 @@
-import 'package:local_wifi_chat_frontend/features/text_chat/entity/messages.dart';
+import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/entity/messages.dart';
 
 abstract class AbstractMessagesRepository {
   Future<MessageList> fetch({Message? olderThan, Message? newerThan, required int limit, bool noLog = false});

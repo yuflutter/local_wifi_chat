@@ -12,6 +12,7 @@ class UserSession implements Initializable {
   String? _userName;
 
   String get userHash => _userHash;
+  String get userId => _userHash.substring(0, 20);
   String? get userName => _userName;
 
   void setUserName(String user) async {
