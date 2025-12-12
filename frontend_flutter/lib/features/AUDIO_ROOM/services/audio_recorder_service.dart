@@ -28,7 +28,10 @@ class AudioRecorderService {
       });
 
       // Останавливаем стрим сразу после получения разрешения
-      stream.getTracks().forEach((track) => track.stop());
+      final tracks = stream.getTracks();
+      for (var track in tracks) {
+        track.stop();
+      }
       return true;
     } catch (e) {
       print('Error requesting microphone permission: $e');
@@ -76,7 +79,12 @@ class AudioRecorderService {
     if (!_isRecording) return;
 
     _mediaRecorder?.stop();
-    _mediaStream?.getTracks().forEach((track) => track.stop());
+    final tracks = _mediaStream?.getTracks();
+    if (tracks != null) {
+      for (var track in tracks) {
+        track.stop();
+      }
+    }
 
     _mediaRecorder = null;
     _mediaStream = null;

@@ -10,6 +10,13 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true // Разрешаем все origins для разработки
@@ -103,14 +110,20 @@ func (r *Room) broadcastAudio(senderID string, audioData []byte) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
+	log.Printf("Broadcasting audio from %s to %d participants", senderID, len(r.participants)-1)
+
 	// Отправляем аудио всем участникам кроме отправителя
+	// Данные пересылаем как есть - фронтенд уже добавил ID отправителя
 	for id, p := range r.participants {
 		if id == senderID {
 			continue
 		}
 
+		log.Printf("Sending audio to participant %s (sender: %s, size: %d bytes)", id, senderID, len(audioData))
 		if err := p.Conn.WriteMessage(websocket.BinaryMessage, audioData); err != nil {
 			log.Printf("Error sending audio to %s: %v", id, err)
+		} else {
+			log.Printf("Successfully sent %d bytes of audio to %s", len(audioData), id)
 		}
 	}
 }
@@ -176,9 +189,32 @@ func (r *Room) handleConnection(w http.ResponseWriter, req *http.Request) {
 
 		} else if messageType == websocket.BinaryMessage {
 			// Аудио данные - пересылаем всем кроме отправителя
+			log.Printf("Received binary message, size: %d bytes", len(data))
+
+			var senderID string
 			if participant != nil {
-				r.broadcastAudio(participant.ID, data)
+				senderID = participant.ID
+				log.Printf("Using known participant: %s (%s)", participant.Name, participant.ID)
+			} else {
+				// Пытаемся извлечь ID отправителя из данных
+				if len(data) >= 36 {
+					senderID = string(data[:36])
+					log.Printf("Extracted sender ID from audio data: '%s'", senderID)
+				} else {
+					log.Printf("Audio data too short to contain sender ID, size: %d bytes", len(data))
+					continue
+				}
 			}
+
+			// Проверяем, что данные содержат ID отправителя
+			if len(data) >= 36 {
+				receivedID := string(data[:36])
+				log.Printf("Audio data contains sender ID: '%s' (length: %d)", receivedID, len(receivedID))
+				// Показываем первые несколько байт для отладки
+				log.Printf("First 10 bytes as hex: %x", data[:min(10, len(data))])
+			}
+
+			r.broadcastAudio(senderID, data)
 		}
 	}
 }

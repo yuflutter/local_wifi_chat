@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:collection/collection.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/core/logger.dart';
@@ -62,13 +63,13 @@ class SocketService {
 
       _socket!.stream.listen(
         _handleIncomingMessage,
-        // onDone: () {
-        //   _isConnected = false;
-        //   _socketStatusController.add(SocketStatus.disconnected);
-        // },
-        onError: (e) {
-          log.error(null, reqNum, e);
+        onDone: () {
           _isConnected = false;
+          _isConnectedController.addError('Socket closed by peer');
+        },
+        onError: (e) {
+          _isConnected = false;
+          log.error(null, reqNum, e);
           _isConnectedController.addError(e);
         },
       );
@@ -85,9 +86,11 @@ class SocketService {
     try {
       // Бинарные данные - аудио чанк
       if (message is List<int>) {
+        print('Received binary message, size: ${message.length} bytes');
         _handleIncomingAudioChunk(Uint8List.fromList(message));
         // Управляющая метадата
       } else if (message is String) {
+        print('Received text message: $message');
         final json = jsonDecode(message) as Map<String, dynamic>;
         final wsMessage = WsMessage.fromJson(json);
 
@@ -135,12 +138,24 @@ class SocketService {
   }
 
   void _handleIncomingAudioChunk(Uint8List data) {
-    final chunk = AudioChunk.fromBinaryChunk(data);
+    print('Processing audio chunk: ${data.length} bytes');
+
     try {
-      final participant = _participants.firstWhere((p) => (p.id == chunk.participantId));
-      chunk.volume = participant.volume;
-    } catch (_) {}
-    audioPlayerPlayFunc(chunk);
+      final chunk = AudioChunk.fromBinaryChunk(data);
+      print('Audio chunk from participant: ${chunk.participantId}, audio data size: ${chunk.audioData.length}');
+
+      final p = _participants.firstWhereOrNull((p) => (p.id == chunk.participantId));
+      if (p != null) {
+        chunk.volume = p.volume;
+        print('Found participant ${p.name} (${p.id}), volume: ${p.volume}');
+      } else {
+        print('Warning: participant ${chunk.participantId} not found in participants list');
+      }
+
+      audioPlayerPlayFunc(chunk);
+    } catch (e) {
+      print('Error processing audio chunk: $e');
+    }
   }
 
   void sendMyAudioChunk(Uint8List audioData) {
@@ -150,6 +165,9 @@ class SocketService {
     final userIdBytes = Uint8List.fromList(_userHash.codeUnits);
     final message = Uint8List.fromList([...userIdBytes, ...audioData]);
 
+    print(
+      'Sending audio: userHash="$_userHash" (${_userHash.length} chars), userIdBytes=${userIdBytes.length} bytes, audioData=${audioData.length} bytes, total=${message.length} bytes',
+    );
     _socket!.sink.add(message);
   }
 
