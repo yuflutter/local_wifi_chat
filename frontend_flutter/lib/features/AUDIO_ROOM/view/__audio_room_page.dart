@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/model/audio_room_model.dart';
 import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/view/connect_dialog.dart';
 import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/view/participant_tile.dart';
-import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/entity/participant.dart';
 import 'package:local_wifi_chat_frontend/view/core/error_log_presenter.dart';
 
 class AudioRoomPage extends StatefulWidget {
@@ -19,7 +18,7 @@ class _AudioRoomPageState extends State<AudioRoomPage> {
   @override
   void initState() {
     super.initState();
-    if (_model.socketStatus == SocketStatus.disconnected) {
+    if (!_model.isConnected) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         showConnectDialog(context, model: _model);
       });
@@ -37,12 +36,13 @@ class _AudioRoomPageState extends State<AudioRoomPage> {
             appBar: AppBar(
               title: const Text('Voice Room'),
               actions: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                    child: _buildConnectionStatus(_model.socketStatus),
+                _connectionStatus(),
+                if (_model.isConnected)
+                  IconButton(
+                    onPressed: _model.disconnect,
+                    tooltip: 'Отключиться',
+                    icon: Icon(Icons.stop),
                   ),
-                ),
               ],
             ),
             body: (!_model.isConnected)
@@ -100,38 +100,42 @@ class _AudioRoomPageState extends State<AudioRoomPage> {
     );
   }
 
-  Widget _buildConnectionStatus(SocketStatus state) {
+  Widget _connectionStatus() {
     Color color;
     String text;
 
-    switch (state) {
-      case SocketStatus.connected:
-        color = Colors.green;
-        text = 'Подключено';
-        break;
-      case SocketStatus.connecting:
-        color = Colors.orange;
-        text = 'Подключение...';
-        break;
-      case SocketStatus.disconnected:
-        color = Colors.grey;
-        text = 'Отключено';
-        break;
+    if (_model.isConnected) {
+      color = Colors.green;
+      text = 'Подключено';
+    } else {
+      color = Colors.grey;
+      text = 'Отключено';
     }
-
+    // switch (state) {
+    //   case SocketStatus.connected:
+    //     color = Colors.green;
+    //     text = 'Подключено';
+    //     break;
+    //   case SocketStatus.connecting:
+    //     color = Colors.orange;
+    //     text = 'Подключение...';
+    //     break;
+    //   case SocketStatus.disconnected:
+    //     color = Colors.grey;
+    //     text = 'Отключено';
+    //     break;
+    // }
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: 8,
           height: 8,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 8),
         Text(text, style: TextStyle(color: color)),
+        const SizedBox(width: 10),
       ],
     );
   }

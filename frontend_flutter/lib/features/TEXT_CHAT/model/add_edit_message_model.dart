@@ -29,7 +29,9 @@ class AddEditMessageModel extends AbstractModel {
   /// Управление фокусом перенесено в модель, так как это часть вью-логики раскрытия формы и показа ошибок.
   final userNameFocusNode = FocusNode();
   late final FocusNode textFocusNode = FocusNode()
-    ..addListener(() => (textFocusNode.hasFocus && !isFormExpanded) ? startAdding() : null);
+    ..addListener(() {
+      if (textFocusNode.hasFocus && !isFormExpanded) startAdding();
+    });
 
   AddEditMessageModel({
     super.errorPresenter,
@@ -93,10 +95,7 @@ class AddEditMessageModel extends AbstractModel {
     notifyListeners();
   }
 
-  void clearReplyTo() {
-    replyTo = null;
-    notifyListeners();
-  }
+  void clearReplyTo() => notify(() => replyTo = null);
 
   bool validate() {
     final res = formKey.currentState?.validate();

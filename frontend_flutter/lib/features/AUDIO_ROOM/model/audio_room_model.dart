@@ -8,44 +8,37 @@ import 'package:local_wifi_chat_frontend/model/abstract_model.dart';
 import 'package:local_wifi_chat_frontend/user_session.dart';
 
 class AudioRoomModel extends AbstractModel {
-  SocketStatus _socketStatus = SocketStatus.disconnected;
+  bool _isConnected = false;
+  bool get isConnected => _isConnected;
 
-  final _socketService = SocketService();
-  late final _socketStatusSubscription = _socketService.socketStatusStream.listen(
-    (s) {
-      print(s);
-      notify(() => _socketStatus = s);
-    },
-    onDone: () => print('onDone'),
-    onError: (e) {
-      print(e);
-      presentError(e);
-      notify(() => _socketStatus = SocketStatus.disconnected);
-    },
-  );
+  List<Participant> _participants = [];
+  List<Participant> get participants => _participants;
+
+  late final _socketService = SocketService()
+    ..isConnectedStream.listen(
+      (s) => notify(() => _isConnected = s),
+      onError: (e) {
+        presentError(e);
+        notify(() => _isConnected = false);
+      },
+    );
 
   final AudioPlayerService _playerService = AudioPlayerService();
   final AudioRecorderService _recorderService = AudioRecorderService();
 
-  List<Participant> _participants = [];
-
   bool _isMicrophoneEnabled = false;
+  bool get isMicrophoneEnabled => _isMicrophoneEnabled;
 
   StreamSubscription? _participantsSubscription;
   StreamSubscription? _audioChunkSubscription;
   StreamSubscription? _recorderSubscription;
-
-  List<Participant> get participants => _participants;
-  SocketStatus get socketStatus => _socketStatus;
-  bool get isMicrophoneEnabled => _isMicrophoneEnabled;
-  bool get isConnected => _socketStatus == SocketStatus.connected;
 
   AudioRoomModel({super.errorPresenter});
 
   @override
   void dispose() {
     disconnect();
-    _socketStatusSubscription.cancel();
+    // _socketStatusSubscription.cancel();
     _socketService.dispose();
     _playerService.dispose();
     _recorderService.dispose();
@@ -54,6 +47,19 @@ class AudioRoomModel extends AbstractModel {
 
   Future<void> connect(String url, String userName) async {
     try {
+      // _socketStatusSubscription = _socketService.socketStatusStream.listen(
+      //   (s) {
+      //     print(s);
+      //     notify(() => _socketStatus = s);
+      //   },
+      //   onDone: () => print('onDone'),
+      //   onError: (e) {
+      //     print(e);
+      //     presentError(e);
+      //     notify(() => _socketStatus = SocketStatus.disconnected);
+      //   },
+      // );
+
       await _socketService.connect(url, userName);
 
       _participantsSubscription = _socketService.participantsStream.listen((participants) {
@@ -78,12 +84,11 @@ class AudioRoomModel extends AbstractModel {
           );
         },
       );
-
       di<UserSession>().setUserName(userName);
       //
     } catch (e, s) {
       presentError(e, s);
-      _socketStatus = SocketStatus.disconnected;
+      notify(() => _isConnected = false);
       rethrow;
     }
   }
@@ -146,7 +151,7 @@ class AudioRoomModel extends AbstractModel {
     _playerService.stopAll();
 
     _participants = [];
-    _socketStatus = SocketStatus.disconnected;
+    _isConnected = false;
     _isMicrophoneEnabled = false;
     notifyListeners();
   }
