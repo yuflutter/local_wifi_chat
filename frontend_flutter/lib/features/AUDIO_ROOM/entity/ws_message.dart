@@ -1,5 +1,8 @@
 import 'dart:typed_data';
 
+import 'package:local_wifi_chat_frontend/app_config.dart';
+import 'package:local_wifi_chat_frontend/core/di.dart';
+
 enum MessageType {
   metadata,
   audioChunk,
@@ -73,12 +76,30 @@ class WsMessage {
   }
 }
 
-class AudioChunkData {
+class AudioChunk {
   final String participantId;
-  final Uint8List data;
+  final Uint8List audioData;
+  double volume = 1.0;
 
-  AudioChunkData({
+  // инициализируется один раз, нужно быть уверенным, что первое использование AudioChunkData
+  // наступило позже инициализации конфига. В нашем случае это так, конфиг инициализируется в main().
+  static int userIdFixedLength = di<AppConfig>().userHashFixedLength;
+
+  AudioChunk({
     required this.participantId,
-    required this.data,
+    required this.audioData,
+    this.volume = 1.0,
   });
+
+  factory AudioChunk.fromBinaryChunk(Uint8List data) {
+    if (data.length < userIdFixedLength) throw 'AudioChunkData.fromBinaryChunk(): слишком короткий чанк';
+
+    final participantId = String.fromCharCodes(data.sublist(0, userIdFixedLength));
+    final audioData = data.sublist(userIdFixedLength);
+
+    return AudioChunk(
+      participantId: participantId,
+      audioData: audioData,
+    );
+  }
 }

@@ -5,11 +5,17 @@ import 'dart:typed_data';
 class AudioRecorderService {
   html.MediaStream? _mediaStream;
   html.MediaRecorder? _mediaRecorder;
-  final _audioChunkController = StreamController<Uint8List>.broadcast();
-  bool _isRecording = false;
 
+  bool _isRecording = false;
+  // bool get isRecording => _isRecording;
+
+  final _audioChunkController = StreamController<Uint8List>();
   Stream<Uint8List> get audioChunkStream => _audioChunkController.stream;
-  bool get isRecording => _isRecording;
+
+  void dispose() {
+    stopRecording();
+    _audioChunkController.close();
+  }
 
   Future<bool> requestPermission() async {
     try {
@@ -66,6 +72,17 @@ class AudioRecorderService {
     }
   }
 
+  void stopRecording() {
+    if (!_isRecording) return;
+
+    _mediaRecorder?.stop();
+    _mediaStream?.getTracks().forEach((track) => track.stop());
+
+    _mediaRecorder = null;
+    _mediaStream = null;
+    _isRecording = false;
+  }
+
   Future<Uint8List?> _readBlobAsUint8List(html.Blob blob) async {
     final completer = Completer<Uint8List?>();
     final reader = html.FileReader();
@@ -84,21 +101,5 @@ class AudioRecorderService {
 
     reader.readAsArrayBuffer(blob);
     return completer.future;
-  }
-
-  void stopRecording() {
-    if (!_isRecording) return;
-
-    _mediaRecorder?.stop();
-    _mediaStream?.getTracks().forEach((track) => track.stop());
-
-    _mediaRecorder = null;
-    _mediaStream = null;
-    _isRecording = false;
-  }
-
-  void dispose() {
-    stopRecording();
-    _audioChunkController.close();
   }
 }

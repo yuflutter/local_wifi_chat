@@ -2,18 +2,20 @@ import 'dart:html' as html;
 import 'dart:typed_data';
 import 'dart:async';
 
+import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/entity/ws_message.dart';
+
 class AudioPlayerService {
   final Map<String, AudioPlayerContext> _playerContexts = {};
 
-  void playAudioChunk(String participantId, Uint8List audioData, double volume) {
-    var context = _playerContexts[participantId];
+  void playAudioChunk(AudioChunk chunk) {
+    var context = _playerContexts[chunk.participantId];
 
     if (context == null) {
-      context = AudioPlayerContext(participantId);
-      _playerContexts[participantId] = context;
+      context = AudioPlayerContext(chunk.participantId);
+      _playerContexts[chunk.participantId] = context;
     }
 
-    context.addChunk(audioData, volume);
+    context.addChunk(chunk.audioData, chunk.volume);
   }
 
   void setVolume(String participantId, double volume) {

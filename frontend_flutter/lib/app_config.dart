@@ -51,9 +51,6 @@ abstract class AppConfig implements Initializable {
   final appName = 'Local WiFi Chat';
   abstract final String apiUrl;
 
-  /// Цитируемый текст будет обрезаться до
-  final maxMessageQuoteLength = 300;
-
   // Заголовки http
   final userHashHeaderKey = 'X-User-Hash';
 
@@ -61,9 +58,18 @@ abstract class AppConfig implements Initializable {
   final userHashKey = 'userHash';
   final userNameKey = 'userName';
 
+  /// Каждый бинаный аудио-чанк, приходящий по сокету или отправляемый в сокет,
+  /// предваряется фиксированным количеством байтов, представляющих хэш пользователя,
+  /// поэтому делаем его строго фиксированной длины (см. инициализацию в UserSession).
+  /// 36 - это длина UUID, но это неважно, можно задать любой размер, согласованный с бекендом.
+  final userHashFixedLength = 36;
+
   // Опции загрузки списков
   final fetchBatchSize = 10;
   final refreshListsEvery = const Duration(seconds: 3);
+
+  /// Цитируемый текст будет обрезаться до
+  final maxMessageQuoteLength = 300;
 
   String get flavor => _flavor;
 

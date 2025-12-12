@@ -9,6 +9,11 @@ import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/entity/ws_message.d
 import 'package:local_wifi_chat_frontend/user_session.dart';
 
 class SocketService {
+  final Stream<Uint8List> audioRecorderChunkStream;
+  StreamSubscription? _audioRecorderChunkSubscription;
+
+  final void Function(AudioChunk) audioPlayerPlayFunc;
+
   WebSocketChannel? _socket;
 
   bool _isConnected = false;
@@ -18,13 +23,21 @@ class SocketService {
   final _participantsController = StreamController<List<Participant>>.broadcast();
   Stream<List<Participant>> get participantsStream => _participantsController.stream;
 
-  final _audioChunkController = StreamController<AudioChunkData>.broadcast();
-  Stream<AudioChunkData> get audioChunkStream => _audioChunkController.stream;
-
   final List<Participant> _participants = [];
   List<Participant> get participants => List.unmodifiable(_participants);
 
-  final _userId = di<UserSession>().userId;
+  final _userHash = di<UserSession>().userHash;
+
+  SocketService({required this.audioRecorderChunkStream, required this.audioPlayerPlayFunc}) {
+    _audioRecorderChunkSubscription = audioRecorderChunkStream.listen(sendMyAudioChunk);
+  }
+
+  void dispose() {
+    _audioRecorderChunkSubscription?.cancel();
+    disconnect();
+    _participantsController.close();
+    _isConnectedController.close();
+  }
 
   Future<void> connect(String url, String userName) async {
     final reqNum = log.apiReq('WS CONNECT', url);
@@ -39,7 +52,7 @@ class SocketService {
       final initMessage = WsMessage(
         type: MessageType.metadata,
         data: {
-          'userId': _userId,
+          'userId': _userHash,
           'userName': userName,
           'action': 'join',
         },
@@ -48,7 +61,7 @@ class SocketService {
       _socket!.sink.add(jsonEncode(initMessage.toJson()));
 
       _socket!.stream.listen(
-        _handleMessage,
+        _handleIncomingMessage,
         // onDone: () {
         //   _isConnected = false;
         //   _socketStatusController.add(SocketStatus.disconnected);
@@ -68,18 +81,22 @@ class SocketService {
     }
   }
 
-  void _handleMessage(dynamic message) {
+  void _handleIncomingMessage(dynamic message) {
     try {
-      if (message is String) {
+      // Бинарные данные - аудио чанк
+      if (message is List<int>) {
+        _handleIncomingAudioChunk(Uint8List.fromList(message));
+        // Управляющая метадата
+      } else if (message is String) {
         final json = jsonDecode(message) as Map<String, dynamic>;
         final wsMessage = WsMessage.fromJson(json);
 
         switch (wsMessage.type) {
           case MessageType.metadata:
-            _handleMetadata(wsMessage.data!);
+            _handleIncomingMetadata(wsMessage.data!);
             break;
           case MessageType.participantUpdate:
-            _handleParticipantUpdate(wsMessage.data!);
+            _handleIncomingParticipants(wsMessage.data!);
             break;
           case MessageType.error:
             print('Error from server: ${wsMessage.data}');
@@ -87,16 +104,13 @@ class SocketService {
           default:
             break;
         }
-      } else if (message is List<int>) {
-        // Бинарные данные - аудио чанк
-        _handleAudioChunk(Uint8List.fromList(message));
       }
     } catch (e) {
       print('Error handling message: $e');
     }
   }
 
-  void _handleMetadata(Map<String, dynamic> data) {
+  void _handleIncomingMetadata(Map<String, dynamic> data) {
     final participantsList = data['participants'] as List<dynamic>?;
     if (participantsList != null) {
       _participants.clear();
@@ -107,7 +121,7 @@ class SocketService {
     }
   }
 
-  void _handleParticipantUpdate(Map<String, dynamic> data) {
+  void _handleIncomingParticipants(Map<String, dynamic> data) {
     final participant = Participant.fromJson(data);
     final index = _participants.indexWhere((p) => p.id == participant.id);
 
@@ -120,38 +134,32 @@ class SocketService {
     _participantsController.add(_participants);
   }
 
-  void _handleAudioChunk(Uint8List data) {
-    // Первые 36 байт - это ID участника (UUID в строковом формате)
-    if (data.length < 36) return;
-
-    final participantId = String.fromCharCodes(data.sublist(0, 36));
-    final audioData = data.sublist(36);
-
-    _audioChunkController.add(
-      AudioChunkData(
-        participantId: participantId,
-        data: audioData,
-      ),
-    );
+  void _handleIncomingAudioChunk(Uint8List data) {
+    final chunk = AudioChunk.fromBinaryChunk(data);
+    try {
+      final participant = _participants.firstWhere((p) => (p.id == chunk.participantId));
+      chunk.volume = participant.volume;
+    } catch (_) {}
+    audioPlayerPlayFunc(chunk);
   }
 
-  void sendAudioChunk(Uint8List audioData) {
+  void sendMyAudioChunk(Uint8List audioData) {
     if (!_isConnected || _socket == null) return;
 
     // Добавляем ID пользователя к аудио данным
-    final userIdBytes = Uint8List.fromList(_userId.padRight(36).codeUnits);
+    final userIdBytes = Uint8List.fromList(_userHash.codeUnits);
     final message = Uint8List.fromList([...userIdBytes, ...audioData]);
 
     _socket!.sink.add(message);
   }
 
-  void updateMicrophoneStatus(bool isMuted) {
+  void updateMyMicrophoneStatus(bool isMuted) {
     if (!_isConnected || _socket == null) return;
 
     final message = WsMessage(
       type: MessageType.participantUpdate,
       data: {
-        'userId': _userId,
+        'userId': di<UserSession>().userHash,
         'isMuted': isMuted,
       },
     );
@@ -176,12 +184,5 @@ class SocketService {
     _isConnected = false;
     _participants.clear();
     _isConnectedController.add(false);
-  }
-
-  void dispose() {
-    disconnect();
-    _participantsController.close();
-    _audioChunkController.close();
-    _isConnectedController.close();
   }
 }

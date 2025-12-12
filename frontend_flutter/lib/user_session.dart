@@ -8,11 +8,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Хранит сессионные данные, требует асинхронной инициализации.
 class UserSession implements Initializable {
   late final SharedPreferences _prefs;
-  late final String _userHash;
-  String? _userName;
 
+  late final String _userHash;
   String get userHash => _userHash;
-  String get userId => _userHash.substring(0, 20);
+
+  String? _userName;
   String? get userName => _userName;
 
   void setUserName(String user) async {
@@ -36,7 +36,7 @@ class UserSession implements Initializable {
     if (savedHash?.isNotEmpty ?? false) {
       _userHash = savedHash!;
     } else {
-      _userHash = _calcClientHash();
+      _userHash = _generateUserHash();
       await _prefs.setString(config.userHashKey, _userHash);
     }
 
@@ -46,8 +46,13 @@ class UserSession implements Initializable {
     }
   }
 
-  String _calcClientHash() {
-    return sha256.convert(utf8.encode('web_${DateTime.now().millisecondsSinceEpoch}')).toString();
+  String _generateUserHash() {
+    final userHashFixedLength = di<AppConfig>().userHashFixedLength;
+    return sha256
+        .convert(utf8.encode('userHash_${DateTime.now().millisecondsSinceEpoch}'))
+        .toString()
+        .substring(0, userHashFixedLength)
+        .padRight(userHashFixedLength);
   }
 
   // String deviceIdentifier;

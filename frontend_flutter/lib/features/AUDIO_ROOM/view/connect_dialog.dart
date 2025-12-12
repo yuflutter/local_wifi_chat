@@ -30,7 +30,7 @@ class _ConnectDialogState extends State<ConnectDialog> {
   void initState() {
     super.initState();
     final session = di<UserSession>();
-    _userIdController.text = session.userId;
+    _userIdController.text = session.userHash;
     _userNameController.text = session.userName ?? '';
   }
 
