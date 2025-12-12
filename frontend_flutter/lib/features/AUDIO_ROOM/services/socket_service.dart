@@ -18,8 +18,8 @@ class SocketService {
   WebSocketChannel? _socket;
 
   bool _isConnected = false;
-  final _isConnectedController = StreamController<bool>();
-  Stream<bool> get isConnectedStream => _isConnectedController.stream;
+  final _connectionStatusController = StreamController<bool>();
+  Stream<bool> get connectionStatusStream => _connectionStatusController.stream;
 
   final _participantsController = StreamController<List<Participant>>.broadcast();
   Stream<List<Participant>> get participantsStream => _participantsController.stream;
@@ -37,7 +37,7 @@ class SocketService {
     _audioRecorderChunkSubscription?.cancel();
     disconnect();
     _participantsController.close();
-    _isConnectedController.close();
+    _connectionStatusController.close();
   }
 
   Future<void> connect(String url, String userName) async {
@@ -65,17 +65,17 @@ class SocketService {
         _handleIncomingMessage,
         onDone: () {
           _isConnected = false;
-          _isConnectedController.addError('Socket closed by peer');
+          _connectionStatusController.addError('Socket closed by peer');
         },
         onError: (e) {
           _isConnected = false;
           log.error(null, reqNum, e);
-          _isConnectedController.addError(e);
+          _connectionStatusController.addError(e);
         },
       );
 
       _isConnected = true;
-      _isConnectedController.add(_isConnected);
+      _connectionStatusController.add(_isConnected);
     } catch (e, s) {
       _isConnected = false;
       throw log.apiError(null, reqNum, e, s);
@@ -201,6 +201,6 @@ class SocketService {
     _socket?.sink.close();
     _isConnected = false;
     _participants.clear();
-    _isConnectedController.add(false);
+    _connectionStatusController.add(false);
   }
 }

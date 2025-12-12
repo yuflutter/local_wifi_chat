@@ -22,7 +22,7 @@ class AudioRoomModel extends AbstractModel {
           audioRecorderChunkStream: _recorderService.audioChunkStream,
           audioPlayerPlayFunc: _playerService.playAudioChunk,
         )
-        ..isConnectedStream.listen(
+        ..connectionStatusStream.listen(
           (s) => notify(() => _isConnected = s),
           onError: (e) {
             presentError(e);
@@ -42,7 +42,6 @@ class AudioRoomModel extends AbstractModel {
   @override
   void dispose() {
     disconnect();
-    // _socketStatusSubscription.cancel();
     _socketService.dispose();
     _playerService.dispose();
     _recorderService.dispose();
