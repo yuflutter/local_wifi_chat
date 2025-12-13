@@ -21,7 +21,7 @@ abstract class AutoValuePrivate<T> {
   /// Только установка ошибки (в объекте не хранится, сразу передается в стрим)
   void setError(Object error, [StackTrace? stack]);
 
-  /// Если значение изменено через внутреннюю мутабельность - кладем в стрим принудительно.
+  /// Если значение изменено через внутреннюю мутабельность - вызываем принудительно для отправки в стрим.
   void notifyListeners();
 }
 
@@ -31,9 +31,9 @@ abstract class AutoValuePrivate<T> {
 class AutoValue<T> implements AutoValuePublic<T>, AutoValuePrivate<T> {
   T _value;
 
-  final StreamController<T> _controller = StreamController.broadcast();
+  final _controller = StreamController<T>.broadcast();
 
-  late final Finalizer _finalizer = Finalizer((_) => _controller.close());
+  late final _finalizer = Finalizer((_) => _controller.close());
 
   AutoValue(T initial) : _value = initial {
     _finalizer.attach(this, null);

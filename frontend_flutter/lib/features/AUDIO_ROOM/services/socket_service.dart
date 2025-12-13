@@ -14,7 +14,7 @@ class SocketService {
   /// Аудио-чанки, приходящие с моего микрофона.
   final Stream<Uint8List> audioRecorderChunkStream;
 
-  /// Интерфейс для воспроизведения аудиочанков (моих и чужих).
+  /// Функция для воспроизведения аудиочанков (моих и чужих).
   final void Function(AudioChunk) audioPlayerPlayFunc;
 
   WebSocketChannel? _socket;
