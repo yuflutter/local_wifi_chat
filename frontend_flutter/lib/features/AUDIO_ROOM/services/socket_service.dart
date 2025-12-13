@@ -121,7 +121,8 @@ class SocketService {
       }
 
       audioPlayerPlayFunc(chunk);
-    } catch (e) {
+    } catch (e, s) {
+      _isConnected.setError(e, s);
       print('Error processing audio chunk: $e');
     }
   }

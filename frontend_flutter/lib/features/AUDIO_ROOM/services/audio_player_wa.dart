@@ -1,22 +1,22 @@
-// lib/web_audio_player_interop.dart
 import 'dart:js_interop';
-import 'dart:html' as html;
 import 'dart:typed_data';
+import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/services/abstract_audio_player.dart';
+import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/entity/ws_message.dart';
 
 // --- Привязки к Web Audio API (Interop bindings) ---
 // Эти классы и расширения позволяют Dart "видеть" и вызывать нативные функции JavaScript
 
 @JS('AudioContext')
 @staticInterop
-class AudioContext {}
+class AudioContext {
+  external factory AudioContext();
+}
 
 extension AudioContextExtension on AudioContext {
-  external Future<JSAny> decodeAudioData(JSArrayBuffer audioData);
-
+  external JSPromise<JSAny> decodeAudioData(JSArrayBuffer audioData);
   external AudioBufferSourceNode createBufferSource();
-
+  external GainNode createGain();
   external num get currentTime;
-
   external AudioDestinationNode get destination;
 }
 
@@ -26,10 +26,27 @@ class AudioBufferSourceNode {}
 
 extension AudioBufferSourceNodeExtension on AudioBufferSourceNode {
   external set buffer(AudioBuffer value);
-
-  external void connect(AudioDestinationNode destination);
-
+  external void connect(GainNode destination);
+  external void connectToDestination(AudioDestinationNode destination);
   external void start([num when]);
+  external void stop([num when]);
+}
+
+@JS()
+@staticInterop
+class GainNode {}
+
+extension GainNodeExtension on GainNode {
+  external AudioParam get gain;
+  external void connect(AudioDestinationNode destination);
+}
+
+@JS()
+@staticInterop
+class AudioParam {}
+
+extension AudioParamExtension on AudioParam {
+  external set value(num value);
 }
 
 @JS()
@@ -44,71 +61,168 @@ extension AudioBufferExtension on AudioBuffer {
 @staticInterop
 class AudioDestinationNode {}
 
-// --- Класс-обертка для управления воспроизведением ---
+// --- Контекст для каждого участника ---
+class ParticipantAudioContext {
+  final List<Uint8List> bufferQueue = [];
+  bool isPlaying = false;
+  num nextPlaybackTime = 0;
+  double volume = 1.0;
+  final List<AudioBufferSourceNode> activeSources = [];
+  GainNode? gainNode;
 
-class WebAudioPlayerInterop {
-  // Инициализируем AudioContext через нативный JS-конструктор
-  late final AudioContext audioContext = (html.window as dynamic).AudioContext().externalConstructor() as AudioContext;
-  // late final AudioContext audioContext = AudioContext().externalConstructor();
-
-  // Очередь для хранения входящих чанков
-  final List<Uint8List> _bufferQueue = [];
-  bool _isPlaying = false;
-  num _nextPlaybackTime = 0; // Время начала следующего чанка
-
-  WebAudioPlayerInterop() {
-    _nextPlaybackTime = audioContext.currentTime;
+  ParticipantAudioContext(AudioContext audioContext) {
+    nextPlaybackTime = audioContext.currentTime;
+    gainNode = audioContext.createGain();
+    gainNode!.connect(audioContext.destination);
   }
 
-  /// Добавляет новый аудио-чанк в очередь воспроизведения.
-  void addChunk(Uint8List chunk) {
-    _bufferQueue.add(chunk);
+  void dispose() {
+    // Останавливаем все активные источники
+    for (final source in activeSources) {
+      try {
+        source.stop();
+      } catch (e) {
+        // Игнорируем ошибки при остановке
+      }
+    }
+    activeSources.clear();
+    bufferQueue.clear();
+  }
+}
+
+// --- Класс-обертка для управления воспроизведением ---
+class AudioPlayerWA implements AbstractAudioPlayer {
+  late final AudioContext _audioContext;
+  final Map<String, ParticipantAudioContext> _participantContexts = {};
+  bool _disposed = false;
+
+  AudioPlayerWA() {
+    _audioContext = AudioContext();
+  }
+
+  @override
+  void playAudioChunk(AudioChunk chunk) {
+    if (_disposed) return;
+
+    final participantId = chunk.participantId;
+
+    // Создаем контекст для участника, если его еще нет
+    _participantContexts[participantId] ??= ParticipantAudioContext(_audioContext);
+
+    final context = _participantContexts[participantId]!;
+    context.bufferQueue.add(chunk.audioData);
+
+    // Устанавливаем громкость из чанка
+    if (context.gainNode != null) {
+      context.gainNode!.gain.value = chunk.volume;
+    }
+
     // Если плеер простаивает, запускаем обработку очереди
-    if (!_isPlaying) {
-      _processQueue();
+    if (!context.isPlaying) {
+      _processQueue(participantId);
     }
   }
 
-  /// Асинхронно обрабатывает очередь, декодирует чанки и ставит их на воспроизведение.
-  Future<void> _processQueue() async {
-    if (_bufferQueue.isEmpty) {
-      _isPlaying = false;
+  @override
+  void setVolume(String participantId, double volume) {
+    if (_disposed) return;
+
+    final context = _participantContexts[participantId];
+    if (context != null) {
+      context.volume = volume;
+      if (context.gainNode != null) {
+        context.gainNode!.gain.value = volume;
+      }
+    }
+  }
+
+  @override
+  void stopParticipant(String participantId) {
+    if (_disposed) return;
+
+    final context = _participantContexts[participantId];
+    if (context != null) {
+      context.dispose();
+      _participantContexts.remove(participantId);
+    }
+  }
+
+  @override
+  void stopAll() {
+    if (_disposed) return;
+
+    for (final context in _participantContexts.values) {
+      context.dispose();
+    }
+    _participantContexts.clear();
+  }
+
+  @override
+  void dispose() {
+    if (_disposed) return;
+
+    _disposed = true;
+    stopAll();
+  }
+
+  /// Асинхронно обрабатывает очередь для конкретного участника
+  Future<void> _processQueue(String participantId) async {
+    if (_disposed) return;
+
+    final context = _participantContexts[participantId];
+    if (context == null || context.bufferQueue.isEmpty) {
+      if (context != null) {
+        context.isPlaying = false;
+      }
       return;
     }
 
-    _isPlaying = true;
-    final chunk = _bufferQueue.removeAt(0);
+    context.isPlaying = true;
+    final chunk = context.bufferQueue.removeAt(0);
 
     try {
       // 1. Конвертируем Dart Uint8List в JavaScript ArrayBuffer
       final JSArrayBuffer jsBuffer = chunk.buffer.toJS;
 
-      // 2. Асинхронно декодируем бинарные данные (ожидается формат MP3, WAV, AAC...)
-      final JSAny bufferAny = await audioContext.decodeAudioData(jsBuffer);
+      // 2. Асинхронно декодируем бинарные данные
+      final JSPromise<JSAny> promise = _audioContext.decodeAudioData(jsBuffer);
+      final JSAny bufferAny = await promise.toDart;
       final AudioBuffer buffer = bufferAny as AudioBuffer;
 
       // 3. Рассчитываем точное время старта для бесшовного воспроизведения
-      // Если текущее время AudioContext "убежало" вперед (задержка сети),
-      // стартуем немедленно.
-      if (_nextPlaybackTime < audioContext.currentTime) {
-        _nextPlaybackTime = audioContext.currentTime;
+      if (context.nextPlaybackTime < _audioContext.currentTime) {
+        context.nextPlaybackTime = _audioContext.currentTime;
       }
 
-      // 4. Создаем источник звука (Source Node) и подключаем его
-      final source = audioContext.createBufferSource();
+      // 4. Создаем источник звука и подключаем через gain node для контроля громкости
+      final source = _audioContext.createBufferSource();
       source.buffer = buffer;
-      source.connect(audioContext.destination);
-      source.start(_nextPlaybackTime); // Запуск в конкретный момент времени
 
-      // 5. Обновляем время старта следующего чанка, добавляя длительность текущего
-      _nextPlaybackTime += buffer.duration;
+      if (context.gainNode != null) {
+        source.connect(context.gainNode!);
+        context.gainNode!.gain.value = context.volume;
+      } else {
+        source.connectToDestination(_audioContext.destination);
+      }
 
-      // 6. Рекурсивно вызываем себя для обработки следующего элемента в очереди
-      _processQueue();
+      // Добавляем источник в список активных
+      context.activeSources.add(source);
+
+      source.start(context.nextPlaybackTime);
+
+      // 5. Обновляем время старта следующего чанка
+      context.nextPlaybackTime += buffer.duration;
+
+      // Удаляем источник из списка активных после завершения воспроизведения
+      Future.delayed(Duration(milliseconds: (buffer.duration * 1000).round() + 100), () {
+        context.activeSources.remove(source);
+      });
+
+      // 6. Рекурсивно обрабатываем следующий элемент в очереди
+      _processQueue(participantId);
     } catch (e) {
-      print("Error decoding audio data: $e");
       // Если чанк поврежден, пропускаем его и идем дальше
-      _processQueue();
+      _processQueue(participantId);
     }
   }
 }

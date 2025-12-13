@@ -1,20 +1,20 @@
 import 'dart:async';
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/entity/participant.dart';
-import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/services/audio_player.dart';
+import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/services/abstract_audio_player.dart';
 import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/services/audio_recorder.dart';
 import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/services/socket_service.dart';
 import 'package:local_wifi_chat_frontend/model/abstract_model.dart';
 import 'package:local_wifi_chat_frontend/user_session.dart';
 
 class AudioRoomModel extends AbstractModel {
-  final AudioRecorder _recorderService = AudioRecorder();
-  final AudioPlayer _playerService = AudioPlayer();
+  final _audioRecorder = AudioRecorder();
+  final _audioPlayer = di<AbstractAudioPlayer>();
 
   late final _socketService =
       SocketService(
-          audioRecorderChunkStream: _recorderService.audioChunkStream,
-          audioPlayerPlayFunc: _playerService.playAudioChunk,
+          audioRecorderChunkStream: _audioRecorder.audioChunkStream,
+          audioPlayerPlayFunc: _audioPlayer.playAudioChunk,
         )
         ..isConnected.stream.listen(
           (v) => notifyListeners(),
@@ -43,8 +43,8 @@ class AudioRoomModel extends AbstractModel {
   void dispose() {
     disconnect();
     _socketService.dispose();
-    _playerService.dispose();
-    _recorderService.dispose();
+    _audioPlayer.dispose();
+    _audioRecorder.dispose();
     super.dispose();
   }
 
@@ -69,12 +69,12 @@ class AudioRoomModel extends AbstractModel {
 
   Future<void> _startMicrophone() async {
     try {
-      final hasPermission = await _recorderService.requestPermission();
+      final hasPermission = await _audioRecorder.requestPermission();
       if (!hasPermission) {
         throw 'Microphone permission denied';
       }
 
-      await _recorderService.startRecording();
+      await _audioRecorder.startRecording();
 
       _isMicrophoneEnabled = true;
       _socketService.updateMyMicrophoneStatus(false);
@@ -85,7 +85,7 @@ class AudioRoomModel extends AbstractModel {
   }
 
   void _stopMicrophone() {
-    _recorderService.stopRecording();
+    _audioRecorder.stopRecording();
     _isMicrophoneEnabled = false;
     _socketService.updateMyMicrophoneStatus(true);
     notifyListeners();
@@ -93,19 +93,19 @@ class AudioRoomModel extends AbstractModel {
 
   void setParticipantVolume(String participantId, double volume) {
     _socketService.updateParticipantVolume(participantId, volume);
-    _playerService.setVolume(participantId, volume);
+    _audioPlayer.setVolume(participantId, volume);
   }
 
   void muteParticipant(String participantId, bool mute) {
     _socketService.muteParticipant(participantId, mute);
-    _playerService.setVolume(participantId, mute ? 0.0 : 1.0);
+    _audioPlayer.setVolume(participantId, mute ? 0.0 : 1.0);
   }
 
   void disconnect() {
     _stopMicrophone();
 
     _socketService.disconnect();
-    _playerService.stopAll();
+    _audioPlayer.stopAll();
 
     _isMicrophoneEnabled = false;
     notifyListeners();

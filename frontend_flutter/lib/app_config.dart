@@ -1,11 +1,31 @@
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/data/api_client.dart';
+import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/services/audio_player_wa.dart';
 import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/data/devices_repository.dart';
 import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/data/messages_repository.dart';
 import 'package:local_wifi_chat_frontend/user_session.dart';
 
 // Вариант конфигурации (flavor) берет из командной строки --dart-define=FLAVOR=RELASE
 const _flavor = String.fromEnvironment('FLAVOR', defaultValue: 'DEBUG'); // RELEASE
+
+// Инжектит глобальные объекты, и инициализирует их ПОСЛЕДОВАТЕЛЬНО.
+// Запускается в main(), ошибки выводятся туда же, логгер инициализируем раньше.
+Future<void> initApp() async {
+  final config = switch (_flavor) {
+    'DEBUG' => DebugConfig(),
+    'RELEASE' => ReleaseConfig(),
+    _ => throw 'Undefined FLAVOR = $_flavor',
+  };
+  await DI.putAndInit(config);
+  await DI.putAndInit(UserSession());
+  await DI.putAndInit(
+    ApiClient(
+      apiUrl: config.apiUrl,
+      getClientHashHeader: () => {config.userHashHeaderKey: di<UserSession>().userHash},
+    ),
+  );
+  DI.putAll([MessagesRepository(), DevicesRepository(), AudioPlayerWA()]);
+}
 
 class DebugConfig extends AppConfig {
   @override
@@ -27,26 +47,7 @@ class ReleaseConfig extends AppConfig {
   final apiUrl = '/api/';
 }
 
-// Инжектит глобальные объекты, и инициализирует их ПОСЛЕДОВАТЕЛЬНО.
-// Запускается в main(), ошибки выводятся туда же, логгер инициализируем раньше.
-Future<void> initApp() async {
-  final config = switch (_flavor) {
-    'DEBUG' => DebugConfig(),
-    'RELEASE' => ReleaseConfig(),
-    _ => throw 'Undefined FLAVOR = $_flavor',
-  };
-  await DI.putAndInit(config);
-  await DI.putAndInit(UserSession());
-  await DI.putAndInit(
-    ApiClient(
-      apiUrl: config.apiUrl,
-      getClientHashHeader: () => {config.userHashHeaderKey: di<UserSession>().userHash},
-    ),
-  );
-  DI.putAll([MessagesRepository(), DevicesRepository()]);
-}
-
-/// Полиморфизм конфига - это важная и часто встречающаяся задача.
+/// Полиморфизм конфига.
 abstract class AppConfig implements Initializable {
   final appName = 'Local WiFi Chat';
   abstract final String apiUrl;
