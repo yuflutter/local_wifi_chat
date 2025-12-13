@@ -1,38 +1,38 @@
 import 'dart:async';
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/entity/participant.dart';
-import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/services/audio_player_service.dart';
-import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/services/audio_recorder_service.dart';
+import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/services/audio_player.dart';
+import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/services/audio_recorder.dart';
 import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/services/socket_service.dart';
 import 'package:local_wifi_chat_frontend/model/abstract_model.dart';
 import 'package:local_wifi_chat_frontend/user_session.dart';
 
 class AudioRoomModel extends AbstractModel {
-  bool _isConnected = false;
-  bool get isConnected => _isConnected;
-
-  List<Participant> _participants = [];
-  List<Participant> get participants => _participants;
-
-  final AudioRecorderService _recorderService = AudioRecorderService();
-  final AudioPlayerService _playerService = AudioPlayerService();
+  final AudioRecorder _recorderService = AudioRecorder();
+  final AudioPlayer _playerService = AudioPlayer();
 
   late final _socketService =
       SocketService(
           audioRecorderChunkStream: _recorderService.audioChunkStream,
           audioPlayerPlayFunc: _playerService.playAudioChunk,
         )
-        ..connectionStatusStream.listen(
-          (s) => notify(() => _isConnected = s),
+        ..isConnected.stream.listen(
+          (v) => notifyListeners(),
           onError: (e) {
             presentError(e);
-            notify(() => _isConnected = false);
+            notifyListeners();
           },
         )
-        ..participantsStream.listen(
-          (pp) => notify(() => _participants = pp),
-          onError: (e) => presentError(e),
+        ..participants.stream.listen(
+          (v) => notifyListeners(),
+          onError: (e) {
+            presentError(e);
+            notifyListeners();
+          },
         );
+
+  bool get isConnected => _socketService.isConnected.value;
+  List<Participant> get participants => _socketService.participants.value;
 
   bool _isMicrophoneEnabled = false;
   bool get isMicrophoneEnabled => _isMicrophoneEnabled;
@@ -55,7 +55,6 @@ class AudioRoomModel extends AbstractModel {
       //
     } catch (e, s) {
       presentError(e, s);
-      notify(() => _isConnected = false);
       rethrow;
     }
   }
@@ -108,8 +107,6 @@ class AudioRoomModel extends AbstractModel {
     _socketService.disconnect();
     _playerService.stopAll();
 
-    _participants = [];
-    _isConnected = false;
     _isMicrophoneEnabled = false;
     notifyListeners();
   }

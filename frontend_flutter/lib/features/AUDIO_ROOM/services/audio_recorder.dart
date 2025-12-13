@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:html' as html;
 import 'dart:typed_data';
+import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/services/abstract_audio_recorder.dart';
 
-class AudioRecorderService {
+class AudioRecorder implements AbstractAudioRecorder {
   html.MediaStream? _mediaStream;
   html.MediaRecorder? _mediaRecorder;
 
@@ -10,13 +11,16 @@ class AudioRecorderService {
   // bool get isRecording => _isRecording;
 
   final _audioChunkController = StreamController<Uint8List>();
+  @override
   Stream<Uint8List> get audioChunkStream => _audioChunkController.stream;
 
+  @override
   void dispose() {
     stopRecording();
     _audioChunkController.close();
   }
 
+  @override
   Future<bool> requestPermission() async {
     try {
       final stream = await html.window.navigator.mediaDevices!.getUserMedia({
@@ -39,6 +43,7 @@ class AudioRecorderService {
     }
   }
 
+  @override
   Future<void> startRecording() async {
     if (_isRecording) return;
 
@@ -75,6 +80,7 @@ class AudioRecorderService {
     }
   }
 
+  @override
   void stopRecording() {
     if (!_isRecording) return;
 

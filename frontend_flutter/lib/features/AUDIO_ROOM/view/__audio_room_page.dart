@@ -36,7 +36,7 @@ class _AudioRoomPageState extends State<AudioRoomPage> {
             appBar: AppBar(
               title: const Text('Voice Room'),
               actions: [
-                _connectionStatus(),
+                _buildConnectionStatus(),
                 if (_model.isConnected)
                   IconButton(
                     onPressed: _model.disconnect,
@@ -100,7 +100,7 @@ class _AudioRoomPageState extends State<AudioRoomPage> {
     );
   }
 
-  Widget _connectionStatus() {
+  Widget _buildConnectionStatus() {
     Color color;
     String text;
 

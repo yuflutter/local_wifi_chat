@@ -105,7 +105,7 @@ abstract class Logger implements Initializable {
   }
 
   /// Логирует ошибку, возвращает объект для проброса наверх и показа пользователю.
-  HumanError error(String? title, Object error, StackTrace? stack) {
+  HumanError error(String? title, Object error, [StackTrace? stack]) {
     // если ошибка связана с ответом API - используем в заголовке номер соотв. запроса API
     final errorText = error.toString();
     final logEntry = ErrorLogEntry(title: title, text: errorText, details: stack.toString());
@@ -114,7 +114,7 @@ abstract class Logger implements Initializable {
   }
 
   /// Логирует ошибку API.
-  HumanError apiError(String? title, int reqNum, Object error, StackTrace? stack) {
+  HumanError apiError(String? title, int reqNum, Object error, [StackTrace? stack]) {
     final logEntryTitle = _apiResTitle(reqNum);
     final errorText = error.toString();
     final logEntry = ErrorLogEntry(title: logEntryTitle, text: errorText, details: stack.toString());

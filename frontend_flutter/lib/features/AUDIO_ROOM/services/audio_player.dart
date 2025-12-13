@@ -1,12 +1,13 @@
 import 'dart:html' as html;
 import 'dart:typed_data';
 import 'dart:async';
-
 import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/entity/ws_message.dart';
+import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/services/abstract_audio_player.dart';
 
-class AudioPlayerService {
+class AudioPlayer implements AbstractAudioPlayer {
   final Map<String, AudioPlayerContext> _playerContexts = {};
 
+  @override
   void playAudioChunk(AudioChunk chunk) {
     var context = _playerContexts[chunk.participantId];
 
@@ -18,15 +19,18 @@ class AudioPlayerService {
     context.addChunk(chunk.audioData, chunk.volume);
   }
 
+  @override
   void setVolume(String participantId, double volume) {
     _playerContexts[participantId]?.setVolume(volume);
   }
 
+  @override
   void stopParticipant(String participantId) {
     _playerContexts[participantId]?.stop();
     _playerContexts.remove(participantId);
   }
 
+  @override
   void stopAll() {
     for (var context in _playerContexts.values) {
       context.stop();
@@ -34,6 +38,7 @@ class AudioPlayerService {
     _playerContexts.clear();
   }
 
+  @override
   void dispose() {
     stopAll();
   }
