@@ -49,6 +49,7 @@ class AudioRoomModel extends AbstractModel {
   }
 
   Future<void> connect(String url, String userName) async {
+    // await Future.delayed(Duration(seconds: 2));
     try {
       await _socketService.connect(url, userName);
       di<UserSession>().setUserName(userName);

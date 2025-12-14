@@ -13,7 +13,7 @@ import (
 	"github.com/samber/lo"
 
 	"local-wifi-chat-backend/config"
-	"local-wifi-chat-backend/features/audioroom"
+	"local-wifi-chat-backend/features/audioroom2"
 	"local-wifi-chat-backend/features/textchat"
 )
 
@@ -36,13 +36,17 @@ func main() {
 
 	textchat.HandleDevices("/api/devices")
 
-	// Инициализировать VoiceRoomHub
-	voiceHub := audioroom.NewVoiceRoomHub()
-	go voiceHub.Run()
-	voiceHub.StartCleanupTicker()
+	// Инициализируем голосовую комнату
 
-	// WebSocket endpoint для голосовой комнаты
-	http.HandleFunc("/ws/voice", audioroom.HandleVoiceRoom(voiceHub))
+	// voiceHub := audioroom1.NewVoiceRoomHub()
+	// go voiceHub.Run()
+	// voiceHub.StartCleanupTicker()
+	// // WebSocket endpoint для голосовой комнаты
+	// http.HandleFunc("/ws/voice", audioroom1.HandleVoiceRoom(voiceHub))
+
+	audioRoom := audioroom2.NewRoom()
+	go audioRoom.Run()
+	http.HandleFunc("/audio", audioRoom.HandleConnection)
 
 	// Проверяем наличие фронтенд-файлов, пытаясь прочитать index.html
 	_, err := frontendEmbedFS.ReadFile("frontend_bundle/index.html")

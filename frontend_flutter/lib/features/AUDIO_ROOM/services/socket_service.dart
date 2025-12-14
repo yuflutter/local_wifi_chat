@@ -41,8 +41,6 @@ class SocketService {
     final reqNum = log.apiReq('WS CONNECT', url);
 
     try {
-      await Future.delayed(Duration(seconds: 2));
-
       _socket = WebSocketChannel.connect(Uri.parse(url));
       await _socket!.ready;
       log.apiRes(reqNum, 'CONNECTED');

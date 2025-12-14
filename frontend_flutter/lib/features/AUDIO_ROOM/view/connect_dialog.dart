@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:local_wifi_chat_frontend/app_config.dart';
 import 'package:provider/provider.dart';
 import 'package:local_wifi_chat_frontend/view/core/waiting_overlay.dart';
 import 'package:local_wifi_chat_frontend/core/di.dart';
@@ -22,9 +23,11 @@ class ConnectDialog extends StatefulWidget {
 
 class _ConnectDialogState extends State<ConnectDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _urlController = TextEditingController(text: 'ws://localhost:8080/audio');
-  final _userIdController = TextEditingController();
   final _userNameController = TextEditingController();
+  final _urlController = TextEditingController(
+    text: di<AppConfig>().audioUrl.replaceFirst('http://', 'ws://'),
+  );
+  final _userIdController = TextEditingController();
 
   @override
   void initState() {
@@ -85,6 +88,7 @@ class _ConnectDialogState extends State<ConnectDialog> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _urlController,
+              enabled: false,
               decoration: const InputDecoration(
                 labelText: 'URL сервера',
                 hintText: 'ws://localhost:8080/audio',
@@ -103,12 +107,12 @@ class _ConnectDialogState extends State<ConnectDialog> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _userIdController,
+              enabled: false,
               decoration: const InputDecoration(
                 labelText: 'User ID',
                 hintText: 'Автоматически сгенерирован',
                 prefixIcon: Icon(Icons.fingerprint),
               ),
-              enabled: false,
             ),
           ],
         ),

@@ -15,7 +15,7 @@ class _Page {
 
 final _pages = [
   _Page((_) => TextChatPage(), true, Icon(Icons.chat), 'Chat'),
-  _Page((_) => AudioRoomPage(), false, Icon(Icons.audiotrack), 'Audio'),
+  _Page((_) => AudioRoomPage(), true, Icon(Icons.audiotrack), 'Audio'),
   _Page((_) => DeviceListPage(), false, Icon(Icons.devices), 'Devices'),
   _Page((_) => ProfilePage(), false, Icon(Icons.person), 'Profile'),
 ];

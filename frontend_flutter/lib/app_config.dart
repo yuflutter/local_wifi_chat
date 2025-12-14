@@ -29,28 +29,35 @@ Future<void> initApp() async {
 
 class DebugConfig extends AppConfig {
   @override
-  final apiUrl = 'http://localhost:9090/api/'; // 192.168.24.53
+  final apiUrl = 'http://localhost:9090/api/';
+  @override
+  final audioUrl = 'ws://localhost:9090/audio';
 
   @override
   // ignore: overridden_fields
   final fetchBatchSize = 5;
 
-  @override
-  Future<void> init() async {
-    // throw "Тестовая ошибка инициализации приложения";
-  }
+  // @override
+  // Future<void> init() async {
+  //   Future.delayed(Duration(seconds: 2));
+  //   throw "Тестовая ошибка инициализации приложения";
+  // }
 }
 
 class ReleaseConfig extends AppConfig {
-  // В проде используем относительный урл, так как бандл фронтенда включен в бинарник бекенда
+  // В проде используем относительные урлы, так как бандл фронтенда включен в бинарник бекенда
   @override
   final apiUrl = '/api/';
+  @override
+  final audioUrl = '/audio/';
 }
 
 /// Полиморфизм конфига.
 abstract class AppConfig implements Initializable {
   final appName = 'Local WiFi Chat';
+
   abstract final String apiUrl;
+  abstract final String audioUrl;
 
   // Заголовки http
   final userHashHeaderKey = 'X-User-Hash';
