@@ -21,24 +21,27 @@ class ProfilePage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text('User Profile')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(config.appName, style: theme.titleLarge),
-            SizedBox(height: 30),
-            Table(
-              columnWidths: const {
-                0: IntrinsicColumnWidth(),
-                1: IntrinsicColumnWidth(),
-              },
-              children: [
-                row('Flavor:', config.flavor),
-                row('User ID:', session.userHash),
-                row('User Name:', session.userName),
-              ],
-            ),
-          ],
+      body: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(config.appName, style: theme.titleLarge),
+              SizedBox(height: 30),
+              Table(
+                columnWidths: const {
+                  0: IntrinsicColumnWidth(),
+                  1: IntrinsicColumnWidth(),
+                },
+                children: [
+                  row('Flavor:', config.flavor),
+                  row('User ID:', '${session.userHash.substring(0, 20)}...'),
+                  row('User Name:', session.userName),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
