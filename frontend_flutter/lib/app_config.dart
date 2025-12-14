@@ -1,3 +1,4 @@
+import 'package:web/web.dart' as web;
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/data/api_client.dart';
 import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/services/audio_player_wa.dart';
@@ -31,7 +32,7 @@ class DebugConfig extends AppConfig {
   @override
   final apiUrl = 'http://localhost:9090/api/';
   @override
-  final audioUrl = 'ws://localhost:9090/audio';
+  get audioUrl => 'ws://localhost:9090/audio';
 
   @override
   // ignore: overridden_fields
@@ -45,11 +46,12 @@ class DebugConfig extends AppConfig {
 }
 
 class ReleaseConfig extends AppConfig {
-  // В проде используем относительные урлы, так как бандл фронтенда включен в бинарник бекенда
+  // В проде используем относительный урл для API, так как бандл фронтенда включен в бинарник бекенда
   @override
   final apiUrl = '/api/';
+  // С вебсокетом так не получается, поэтому конструируем полный URL
   @override
-  final audioUrl = '/audio/';
+  final audioUrl = 'ws://${web.window.location.host}/audio';
 }
 
 /// Полиморфизм конфига.
@@ -57,7 +59,7 @@ abstract class AppConfig implements Initializable {
   final appName = 'Local WiFi Chat';
 
   abstract final String apiUrl;
-  abstract final String audioUrl;
+  String get audioUrl;
 
   // Заголовки http
   final userHashHeaderKey = 'X-User-Hash';

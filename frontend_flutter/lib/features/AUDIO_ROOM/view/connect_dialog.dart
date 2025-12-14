@@ -75,7 +75,6 @@ class _ConnectDialogState extends State<ConnectDialog> {
               autofocus: true,
               decoration: const InputDecoration(
                 labelText: 'Ваше имя',
-                hintText: 'Введите имя',
                 prefixIcon: Icon(Icons.person),
               ),
               validator: (value) {
@@ -91,9 +90,9 @@ class _ConnectDialogState extends State<ConnectDialog> {
               enabled: false,
               decoration: const InputDecoration(
                 labelText: 'URL сервера',
-                hintText: 'ws://localhost:8080/audio',
                 prefixIcon: Icon(Icons.link),
               ),
+              style: TextStyle(fontSize: 10),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Введите URL сервера';
@@ -110,9 +109,9 @@ class _ConnectDialogState extends State<ConnectDialog> {
               enabled: false,
               decoration: const InputDecoration(
                 labelText: 'User ID',
-                hintText: 'Автоматически сгенерирован',
                 prefixIcon: Icon(Icons.fingerprint),
               ),
+              style: TextStyle(fontSize: 10),
             ),
           ],
         ),
@@ -124,7 +123,7 @@ class _ConnectDialogState extends State<ConnectDialog> {
         ),
         ElevatedButton(
           onPressed: _connect,
-          child: const Text('Подключиться'),
+          child: const Text('Войти'),
         ),
       ],
     );
