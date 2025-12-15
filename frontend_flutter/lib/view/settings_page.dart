@@ -3,8 +3,8 @@ import 'package:local_wifi_chat_frontend/app_config.dart';
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/user_session.dart';
 
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
 
   @override
   build(context) {
@@ -20,7 +20,7 @@ class ProfilePage extends StatelessWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: Text('User Profile')),
+      appBar: AppBar(title: Text('App Settings')),
       body: Padding(
         padding: const EdgeInsets.all(10),
         child: Center(

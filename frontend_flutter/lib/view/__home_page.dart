@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/view/__text_chat_page.dart';
 import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/view/device_list_page.dart';
 import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/view/__audio_room_page.dart';
-import 'package:local_wifi_chat_frontend/view/profile_page.dart';
+import 'package:local_wifi_chat_frontend/view/settings_page.dart';
 
 class _Page {
   final WidgetBuilder builder;
@@ -17,7 +17,7 @@ final _pages = [
   _Page((_) => TextChatPage(), true, Icon(Icons.chat), 'Chat'),
   _Page((_) => AudioRoomPage(), true, Icon(Icons.audiotrack), 'Audio'),
   _Page((_) => DeviceListPage(), false, Icon(Icons.devices), 'Devices'),
-  _Page((_) => ProfilePage(), false, Icon(Icons.person), 'Profile'),
+  _Page((_) => SettingsPage(), false, Icon(Icons.person), 'Settings'),
 ];
 
 class HomePage extends StatefulWidget {
@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> {
     _pages[_pageIndex].isLoaded = true;
   });
 
-  /// Этот хак позволяет часть страниц сохранять между заходами, а часть пересоздавать каждый раз.
+  /// Этот хак позволяет некоторые страницы сохранять между заходами, а остальные пересоздавать каждый раз.
   Iterable<Widget> _stackOfPages() => Iterable.generate(_pages.length).map(
     (index) {
       final page = _pages[index];

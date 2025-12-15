@@ -54,7 +54,7 @@ class ReleaseConfig extends AppConfig {
   final audioUrl = 'ws://${web.window.location.host}/audio';
 }
 
-/// Полиморфизм конфига.
+/// Полиморфизм конфига нужен всегда.
 abstract class AppConfig implements Initializable {
   final appName = 'Local WiFi Chat';
 

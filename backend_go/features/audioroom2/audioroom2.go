@@ -2,6 +2,7 @@ package audioroom2
 
 import (
 	"encoding/json"
+	"local-wifi-chat-backend/config"
 	"log"
 	"net/http"
 	"sync"
@@ -23,6 +24,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+// TODO: совместить участника аудио-комнаты с пользователем тектового чата, переименовать поля.
 type Participant struct {
 	ID         string          `json:"id"`
 	Name       string          `json:"name"`
@@ -188,6 +190,7 @@ func (r *Room) HandleConnection(w http.ResponseWriter, req *http.Request) {
 			}
 
 		} else if messageType == websocket.BinaryMessage {
+			userHashFixedLength := config.UserHashFixedLength
 			// Аудио данные - пересылаем всем кроме отправителя
 			log.Printf("Received binary message, size: %d bytes", len(data))
 
@@ -197,8 +200,8 @@ func (r *Room) HandleConnection(w http.ResponseWriter, req *http.Request) {
 				log.Printf("Using known participant: %s (%s)", participant.Name, participant.ID)
 			} else {
 				// Пытаемся извлечь ID отправителя из данных
-				if len(data) >= 36 {
-					senderID = string(data[:36])
+				if len(data) >= userHashFixedLength {
+					senderID = string(data[:userHashFixedLength])
 					log.Printf("Extracted sender ID from audio data: '%s'", senderID)
 				} else {
 					log.Printf("Audio data too short to contain sender ID, size: %d bytes", len(data))
@@ -207,8 +210,8 @@ func (r *Room) HandleConnection(w http.ResponseWriter, req *http.Request) {
 			}
 
 			// Проверяем, что данные содержат ID отправителя
-			if len(data) >= 36 {
-				receivedID := string(data[:36])
+			if len(data) >= userHashFixedLength {
+				receivedID := string(data[:userHashFixedLength])
 				log.Printf("Audio data contains sender ID: '%s' (length: %d)", receivedID, len(receivedID))
 				// Показываем первые несколько байт для отладки
 				log.Printf("First 10 bytes as hex: %x", data[:min(10, len(data))])
