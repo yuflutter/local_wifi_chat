@@ -1,6 +1,6 @@
 flutter build web \
   --debug \
-  --dart-define=FLAVOR=DEFUG \
+  --dart-define=FLAVOR=DEВUG \
   --no-web-resources-cdn
 
 cd build/web  

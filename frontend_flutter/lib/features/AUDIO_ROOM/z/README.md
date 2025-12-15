@@ -1,0 +1,97 @@
+# Local WiFi Chat Frontend
+
+Flutter Web приложение для локального чата и аудио-связи.
+
+## 🎙️ Новая функция: Аудио-комната
+
+Реализован полноценный функционал аудио-комнаты с WebSocket и MCU архитектурой.
+
+### Быстрый старт
+
+```bash
+./start_audio_room.sh
+```
+
+### Документация
+
+- 🚀 [Быстрый старт](QUICKSTART.md)
+- 📖 [Полное описание](AUDIO_ROOM_README.md)
+- ⚙️ [Настройка и запуск](AUDIO_ROOM_SETUP.md)
+- 🔧 [Интеграция](INTEGRATION_GUIDE.md)
+- 📋 [Сводка реализации](AUDIO_ROOM_SUMMARY.md)
+- ✅ [Чеклист](CHECKLIST.md)
+
+### Возможности
+
+- ✅ WebSocket соединение в реальном времени
+- ✅ Воспроизведение аудио от нескольких участников
+- ✅ Регулировка громкости каждого участника
+- ✅ Запись и отправка аудио с микрофона
+- ✅ MCU архитектура без микширования на сервере
+- ✅ Микширование в браузере (Web Audio API)
+- ✅ Заглушка бекенда на Go
+
+## Getting Started
+
+### Требования
+
+- Flutter SDK 3.10.3+
+- Go 1.21+ (для бекенда)
+- Современный браузер с поддержкой WebRTC
+
+### Установка
+
+```bash
+flutter pub get
+```
+
+### Запуск
+
+#### Аудио-комната
+
+```bash
+./start_audio_room.sh
+```
+
+#### Обычный запуск
+
+```bash
+flutter run -d chrome
+```
+
+## Структура проекта
+
+```
+lib/
+├── features/
+│   ├── text_chat/          # Текстовый чат
+│   └── voice_room/         # Аудио-комната (новое!)
+│       ├── models/
+│       ├── services/
+│       ├── providers/
+│       ├── widgets/
+│       └── view/
+├── core/                   # Общие утилиты
+├── data/                   # Слой данных
+└── view/                   # UI компоненты
+
+backend_mock/               # Заглушка WebSocket сервера
+├── main.go
+├── go.mod
+├── README.md
+├── API.md
+└── test_client.html
+```
+
+## Технологии
+
+- Flutter Web
+- WebSocket (web_socket_channel)
+- Provider (state management)
+- Web Audio API
+- MediaRecorder API
+- Go (backend mock)
+
+## Лицензия
+
+Проект Local WiFi Chat
