@@ -41,7 +41,7 @@ class _AudioRoomPageState extends State<AudioRoomPage> {
                   IconButton(
                     onPressed: _model.disconnect,
                     tooltip: 'Отключиться',
-                    icon: Icon(Icons.stop),
+                    icon: Icon(Icons.stop, color: Colors.red),
                   ),
               ],
             ),
@@ -87,10 +87,7 @@ class _AudioRoomPageState extends State<AudioRoomPage> {
                 return FloatingActionButton.large(
                   onPressed: model.toggleMicrophone,
                   backgroundColor: model.isMicrophoneEnabled ? Colors.red : Colors.blue,
-                  child: Icon(
-                    model.isMicrophoneEnabled ? Icons.mic : Icons.mic_off,
-                    size: 32,
-                  ),
+                  child: Icon(model.isMicrophoneEnabled ? Icons.mic : Icons.mic_off),
                 );
               },
             ),

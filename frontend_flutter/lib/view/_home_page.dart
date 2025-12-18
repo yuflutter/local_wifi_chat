@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/view/__text_chat_page.dart';
+import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/view/_text_chat_page.dart';
 import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/view/device_list_page.dart';
-import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/view/__audio_room_page.dart';
+import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/view/_audio_room_page.dart';
 import 'package:local_wifi_chat_frontend/view/settings_page.dart';
 
 class _Page {

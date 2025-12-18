@@ -1,20 +1,21 @@
 import 'dart:async';
 
-/// Атрибут с приватным доступом на запись и публичным доступом на чтение / подписку.
-/// Не требует ручной отмены подписок на стрим, они отменяются автоматически сборщиком мусора.
-/// Наружу отдаётся публичный интерфейc (только чтение), внутри класса-владельца используется полный (+ запись).
+/// Реактивный трибут с приватным доступом на запись и публичным доступом на чтение / подписку.
+/// В отличие от известных реактивных сигналов - поддерживается транспорт ошибок благодаря механизму стрима.
+/// Не требует ручной отмены стрим-подписок, так как они отменяются автоматически сборщиком мусора.
+/// Наружу отдаётся публичный интерфейc (чтение + подписка), внутри класса-владельца используется полный (+ запись).
 /// Пример использования:
-///   final _isConnected = AutoValue(false);
+///   final _isConnected = ListenableValue(false);
 ///   late final isConnected = _isConnected.public;
 
 /// Публичный интерфейс (только чтение)
-abstract class AutoValuePublic<T> {
+abstract class ListenableValuePublic<T> {
   T get value;
   Stream<T> get stream;
 }
 
 /// Внутренний интерфейс (на запись)
-abstract class AutoValuePrivate<T> {
+abstract class ListenableValuePrivate<T> {
   /// В одном методе устанавливаем значение и опционально ошибку.
   void set(T v, {Object? error, StackTrace? stack});
 
@@ -28,14 +29,14 @@ abstract class AutoValuePrivate<T> {
 /// Полная реализация обеих интерфейсов.
 /// Подход к обработке ошибок аналогичен AbstactModel - считаем ошибку одноразовым атрибутом,
 /// поэтому в стейте ошибку не храним, а передаем ее в стрим, предполагая, что она будет обработана презентером.
-class AutoValue<T> implements AutoValuePublic<T>, AutoValuePrivate<T> {
+class ListenableValue<T> implements ListenableValuePublic<T>, ListenableValuePrivate<T> {
   T _value;
 
   final _controller = StreamController<T>.broadcast();
 
   late final _finalizer = Finalizer((_) => _controller.close());
 
-  AutoValue(T initial) : _value = initial {
+  ListenableValue(T initial) : _value = initial {
     _finalizer.attach(this, null);
   }
 
@@ -60,5 +61,5 @@ class AutoValue<T> implements AutoValuePublic<T>, AutoValuePrivate<T> {
   @override
   Stream<T> get stream => _controller.stream;
 
-  AutoValuePublic<T> get public => this as AutoValuePublic<T>;
+  ListenableValuePublic<T> get public => this as ListenableValuePublic<T>;
 }

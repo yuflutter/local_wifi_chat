@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:collection/collection.dart';
-import 'package:local_wifi_chat_frontend/core/auto_value.dart';
+import 'package:local_wifi_chat_frontend/core/listenable_value.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/core/logger.dart';
@@ -19,10 +19,10 @@ class SocketService {
 
   WebSocketChannel? _socket;
 
-  final _isConnected = AutoValue(false);
+  final _isConnected = ListenableValue(false);
   late final isConnected = _isConnected.public;
 
-  final _participants = AutoValue<List<Participant>>([]);
+  final _participants = ListenableValue<List<Participant>>([]);
   late final participants = _participants.public;
 
   final _userHash = di<UserSession>().userHash;
