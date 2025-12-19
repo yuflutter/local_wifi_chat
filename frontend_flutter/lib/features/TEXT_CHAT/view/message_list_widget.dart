@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/view/message_list_tile.dart';
 import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/model/message_list_model.dart';
-import 'package:provider/provider.dart';
 
 class MessageListWidget extends StatelessWidget {
   const MessageListWidget({super.key});

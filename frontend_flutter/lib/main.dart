@@ -3,7 +3,7 @@ import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/app_config.dart';
 import 'package:local_wifi_chat_frontend/core/logger.dart';
 import 'package:local_wifi_chat_frontend/view/core/error_log_presenter.dart';
-import 'package:local_wifi_chat_frontend/view/_home_page.dart';
+import 'package:local_wifi_chat_frontend/view/__home_page.dart';
 
 (Object, StackTrace?)? _initError;
 

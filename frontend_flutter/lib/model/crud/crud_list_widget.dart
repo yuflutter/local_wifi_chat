@@ -51,7 +51,7 @@ class _CrudListWidgetState<T, Tnew> extends State<CrudListWidget<T, Tnew>> {
     final list = model.displayed;
     if (model.isFetchError) {
       WidgetsBinding.instance.addPostFrameCallback(
-        (_) => showErrorLogWidget(
+        (_) => showErrorLogPopup(
           context,
           error: log.error('Error loading the list', model.fetchError!, model.fetchErrorStack),
         ),

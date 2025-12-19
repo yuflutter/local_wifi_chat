@@ -13,7 +13,7 @@ class DeviceListPage extends StatefulWidget {
 class _DeviceListPageState extends State<DeviceListPage> {
   late final _model = DeviceListModel(
     errorPresenter: (e, s) => WidgetsBinding.instance.addPostFrameCallback(
-      (_) => showErrorLogWidget(context, error: e, stack: s),
+      (_) => showErrorLogPopup(context, error: e, stack: s),
     ),
   );
   late final _initFuture = _model.fetch();
