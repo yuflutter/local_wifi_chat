@@ -16,15 +16,15 @@ class MessageListModel extends AbstractModel {
   var list = MessageList.empty();
 
   /// Имеются новые непрочитанные сообщения, используется для показа кнопки "вниз".
-  var _existsUnread = false;
-  bool get existsUnread => _existsUnread;
+  var _isUnreadAvailable = false;
+  bool get isUnreadAvailable => _isUnreadAvailable;
 
   /// Контроллер используется для отслеживания наличия прочитанных / непрочитанных сообщений.
   /// и принудительного скролла. Перенесено из виджета в модель, потому что это часть вью-логики.
   late final ScrollController scrollController = ScrollController()
     ..addListener(() {
-      if (scrollController.position.pixels < 20 && _existsUnread) {
-        notify(() => _existsUnread = false);
+      if (scrollController.position.pixels < 20 && _isUnreadAvailable) {
+        notify(() => _isUnreadAvailable = false);
       }
     });
 
@@ -103,7 +103,7 @@ class MessageListModel extends AbstractModel {
           if (bath.all.isNotEmpty) {
             // pring(null, "Batch of newer loaded: ${bath.all.length} items");
             if (scrollController.hasClients && scrollController.position.pixels > 20) {
-              _existsUnread = true;
+              _isUnreadAvailable = true;
             }
           }
           list = MessageList(

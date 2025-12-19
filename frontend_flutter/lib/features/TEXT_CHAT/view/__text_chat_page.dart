@@ -73,7 +73,7 @@ class TextChatPageState extends State<TextChatPage> {
                 );
               },
             ),
-            floatingActionButton: (_messageListModel.existsUnread)
+            floatingActionButton: (_messageListModel.isUnreadAvailable)
                 ? Padding(
                     padding: const EdgeInsets.fromLTRB(0, 0, 0, 52),
                     child: FloatingActionButton(
