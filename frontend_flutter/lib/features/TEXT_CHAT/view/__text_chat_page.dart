@@ -17,7 +17,14 @@ class TextChatPage extends StatefulWidget {
 }
 
 class TextChatPageState extends State<TextChatPage> {
-  late final _messageListModel = MessageListModel(errorPresenter: (e, s) => errorLogPresenter(context, e, s));
+  late final _messageListModel = MessageListModel(
+    errorPresenter: (e, s) => errorLogPresenter(context, e, s),
+  );
+
+  late final _addEditMessageModel = AddEditMessageModel(
+    messageListModel: _messageListModel,
+    errorPresenter: (e, s) => errorLogPresenter(context, e, s),
+  );
 
   // Ошибку первого фетча показываем на экране (вместо контента), остальные показываем презентером.
   late var _initFuture = _messageListModel.fetchTop(noPresentError: true);
@@ -27,12 +34,7 @@ class TextChatPageState extends State<TextChatPage> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: _messageListModel),
-        ChangeNotifierProvider(
-          create: (_) => AddEditMessageModel(
-            messageListModel: _messageListModel,
-            errorPresenter: (e, s) => errorLogPresenter(context, e, s),
-          ),
-        ),
+        ChangeNotifierProvider.value(value: _addEditMessageModel),
       ],
       child: ListenableBuilder(
         listenable: _messageListModel,

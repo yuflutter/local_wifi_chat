@@ -39,7 +39,7 @@ class MessageList {
   MessageList.empty() : all = [], isOlderAvailable = false;
 }
 
-/// Создаётся | редактируется пользователем, уходит на бекенд.
+/// Создаётся | редактируется пользователем, уходит на бекенд
 class AddEditMessage {
   final String userName;
   final String text;

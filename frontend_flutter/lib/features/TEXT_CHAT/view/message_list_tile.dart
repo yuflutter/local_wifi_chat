@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/model/add_edit_message_model.dart';
 import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/entity/messages.dart';
 import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/view/quote_widget.dart';
-import 'package:provider/provider.dart';
 
 class MessageListTile extends StatefulWidget {
   final Message message;
@@ -28,7 +28,7 @@ class _MessageListTileState extends State<MessageListTile> {
         constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * (isMine ? 0.8 : 1)),
         child: Card(
           margin: const EdgeInsets.fromLTRB(0, 8, 0, 0),
-          color: isMine ? Colors.brown : theme.highlightColor, // Цвет как в Telegram для моих сообщений
+          color: isMine ? Colors.brown : theme.highlightColor,
           child: Padding(
             padding: const EdgeInsets.all(12.0),
             child: Column(
@@ -61,28 +61,15 @@ class _MessageListTileState extends State<MessageListTile> {
                               ),
                               child: Row(
                                 children: [
-                                  // Icon(
-                                  //   Icons.format_quote,
-                                  //   size: 14,
-                                  //   color: Colors.black,
-                                  // ),
                                   InkWell(
                                     onTap: () => setState(() => _selectedText = ''),
-                                    child: Icon(
-                                      Icons.close,
-                                      size: 14,
-                                      color: Colors.black,
-                                    ),
+                                    child: Icon(Icons.close, size: 14, color: Colors.black),
                                   ),
                                   const SizedBox(width: 4),
                                   Expanded(
                                     child: Text(
                                       _selectedText.replaceAll('\n', ' \\ '),
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.black,
-                                        fontStyle: FontStyle.italic,
-                                      ),
+                                      style: TextStyle(fontSize: 12, color: Colors.black, fontStyle: FontStyle.italic),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
