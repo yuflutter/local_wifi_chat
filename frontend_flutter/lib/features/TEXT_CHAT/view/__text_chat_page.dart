@@ -27,7 +27,7 @@ class TextChatPageState extends State<TextChatPage> {
   );
 
   // Ошибку первого фетча показываем на экране (вместо контента), остальные показываем презентером.
-  late var _initFuture = _messageListModel.fetchTop(noPresentError: true);
+  late final _initFuture = _messageListModel.fetchTop(noPresentError: true);
 
   @override
   Widget build(BuildContext context) {
@@ -78,11 +78,10 @@ class TextChatPageState extends State<TextChatPage> {
             floatingActionButton: (_messageListModel.isUnreadAvailable)
                 ? Padding(
                     padding: const EdgeInsets.fromLTRB(0, 0, 0, 52),
-                    child: FloatingActionButton(
+                    child: FloatingActionButton.small(
                       onPressed: _messageListModel.scrollToTop,
                       tooltip: 'Имеются новые непрочитанные',
                       backgroundColor: Colors.red,
-                      mini: true,
                       child: Icon(Icons.arrow_downward),
                     ),
                   )
@@ -94,6 +93,8 @@ class TextChatPageState extends State<TextChatPage> {
   }
 
   void _refreshAll() {
-    setState(() => _initFuture = _messageListModel.fetchTop(noPresentError: true));
+    _messageListModel.fetchTop(noPresentError: true);
+    _addEditMessageModel.clearAndCollapseForm();
+    // setState(() => _initFuture = _messageListModel.fetchTop(noPresentError: true));
   }
 }
