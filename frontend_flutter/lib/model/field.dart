@@ -3,7 +3,7 @@ import 'package:local_wifi_chat_frontend/core/di.dart';
 
 /// Любой валидатор должен возвращать текст ошибки, используя в том числе label валидируемого поля,
 /// поэтому сигнатуры разные - для функции, предоставленной пользователем, и для внутреннего типа.
-/// Для конвертации типов - пользовательский валидатор оборачиваем в конструкторе с использованием setValidator().
+/// Для конвертации типов - пользовательский валидатор оборачиваем в конструкторе с использованием _setValidator().
 typedef PublicValidator<T> = String? Function(T? value, String label)?;
 typedef PrivateValidator<T> = String? Function(T? value)?;
 
@@ -17,7 +17,8 @@ abstract class Field<T> implements Disposable {
   PrivateValidator<T> _validator;
 
   PrivateValidator<T> get validator => _validator;
-  void setValidator(PublicValidator<T>? newValidator) {
+
+  void _setValidator(PublicValidator<T>? newValidator) {
     _validator = (newValidator != null)
         ? (T? v) {
             hasError = false;
@@ -34,7 +35,7 @@ abstract class Field<T> implements Disposable {
 
   Field({this.value, required this.label, this.hint, PublicValidator<T> validator}) {
     // здесь происходит оборачивание пользовательского валидатора с конвертацией типов
-    setValidator(validator);
+    _setValidator(validator);
   }
 
   void clear() => hasError = false;
