@@ -6,9 +6,10 @@ import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/entity/repos.dart';
 import 'package:local_wifi_chat_frontend/model/abstract_model.dart';
 import 'package:local_wifi_chat_frontend/model/field.dart';
 import 'package:local_wifi_chat_frontend/user_session.dart';
+import 'package:local_wifi_chat_frontend/core/scope_fun.dart';
 
 class AddEditMessageModel extends AbstractModel {
-  final MessageListModel _messageListModel;
+  final MessageListModel messageListModel;
   final AbstractMessagesRepository _repository;
 
   final userName = StringField(
@@ -35,10 +36,9 @@ class AddEditMessageModel extends AbstractModel {
 
   AddEditMessageModel({
     super.errorPresenter,
-    MessageListModel? messageListModel,
+    required this.messageListModel,
     AbstractMessagesRepository? repository,
-  }) : _messageListModel = messageListModel ?? di<MessageListModel>(),
-       _repository = repository ?? di<AbstractMessagesRepository>();
+  }) : _repository = repository ?? di<AbstractMessagesRepository>();
 
   @override
   void dispose() {
@@ -51,9 +51,9 @@ class AddEditMessageModel extends AbstractModel {
 
   void startAdding({Message? replyToMessage, String? replyToQuote}) async {
     _clearForm();
-    replyTo = (replyToMessage != null)
-        ? ReplyTo(messageId: replyToMessage.id, userName: replyToMessage.userName, quote: replyToQuote!)
-        : null;
+    replyTo = replyToMessage?.let(
+      (m) => ReplyTo(messageId: m.id, userName: m.userName, quote: replyToQuote ?? m.text),
+    );
     isFormExpanded = true;
     notifyListeners();
     // сначала показать всю форму, и только в следующем тике поставить фокус
@@ -117,10 +117,10 @@ class AddEditMessageModel extends AbstractModel {
         // throw Exception('Testing adding new message error');
         if (id == null) {
           await _repository.add(addEditMessage);
-          await _messageListModel.fetchNewer();
+          await messageListModel.fetchNewer();
         } else {
           final updatedMessage = await _repository.edit(addEditMessage);
-          _messageListModel.updateInList(updatedMessage);
+          messageListModel.updateInList(updatedMessage);
         }
         di<UserSession>().setUserName(userName.value!);
         clearAndCollapseForm();

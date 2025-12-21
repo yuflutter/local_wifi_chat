@@ -130,7 +130,7 @@ class _MessageListTileState extends State<MessageListTile> {
   void _reply(BuildContext context, {String? quote}) {
     context.read<AddEditMessageModel>().startAdding(
       replyToMessage: widget.message,
-      replyToQuote: quote ?? widget.message.text,
+      replyToQuote: quote,
     );
     setState(() => _selectedText = '');
   }
