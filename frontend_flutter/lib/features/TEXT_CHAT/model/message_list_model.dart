@@ -132,7 +132,7 @@ class MessageListModel extends AbstractModel {
   void updateInList(Message message) {
     final i = list.all.indexWhere((m) => m.id == message.id);
     if (i < 0) {
-      return log.info(null, 'Message ${message.id} not flund in list');
+      return log.info(null, 'Message ${message.id} not found in list');
     } else {
       notify(() => list.all[i] = message);
     }

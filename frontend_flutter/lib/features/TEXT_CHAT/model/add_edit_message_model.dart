@@ -65,11 +65,11 @@ class AddEditMessageModel extends AbstractModel {
     }
   }
 
-  void startEditing({Message? messageToEdit}) async {
+  void startEditing({required Message messageToEdit}) async {
     _clearForm();
-    id = messageToEdit?.id;
-    userName.controller.text = messageToEdit?.userName ?? '';
-    text.controller.text = messageToEdit?.text ?? '';
+    id = messageToEdit.id;
+    userName.controller.text = messageToEdit.userName;
+    text.controller.text = messageToEdit.text;
     isFormExpanded = true;
     notifyListeners();
     // сначала показать всю форму, и только в следующем тике поставить фокус
