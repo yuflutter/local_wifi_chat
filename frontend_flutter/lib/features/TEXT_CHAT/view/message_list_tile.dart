@@ -52,6 +52,7 @@ class _MessageListTileState extends State<MessageListTile> {
                               ),
                             ],
                           ),
+                          // Дублируем выделенный текст, так как при нажатии на кнопку исходное выделение становится невидимым
                           if (_selectedText.isNotEmpty) ...{
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
