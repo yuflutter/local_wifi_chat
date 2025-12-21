@@ -15,7 +15,7 @@ abstract class AbstractModel with ChangeNotifier {
 
   void clearErrorPresenter() => errorPresenter = null;
 
-  void presentError(Object e, [StackTrace? stack]) => (errorPresenter != null) ? errorPresenter!(e, stack) : null;
+  void presentError(Object e, [StackTrace? stack]) => errorPresenter?.call(e, stack);
 
   void notify(void Function() what) {
     what();
