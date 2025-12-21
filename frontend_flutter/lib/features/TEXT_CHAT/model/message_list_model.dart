@@ -128,7 +128,7 @@ class MessageListModel extends AbstractModel {
     return batch.where((m) => ids.add(m.id)).toList();
   }
 
-  /// При изменении сообщения бекенд возвращает измененный объект, который нужно вставить в дерево.
+  /// При изменении сообщения бекенд возвращает измененный объект, который нужно вставить в список.
   void updateInList(Message message) {
     final i = list.all.indexWhere((m) => m.id == message.id);
     if (i < 0) {
