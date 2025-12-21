@@ -21,7 +21,7 @@ class AddEditMessageModel extends AbstractModel {
     label: 'Текст сообщения',
     validator: StringField.emptyStringValidator,
   );
-  String? id;
+  String? _id;
   ReplyTo? replyTo;
 
   var isFormExpanded = false;
@@ -67,7 +67,7 @@ class AddEditMessageModel extends AbstractModel {
 
   void startEditing({required Message messageToEdit}) async {
     _clearForm();
-    id = messageToEdit.id;
+    _id = messageToEdit.id;
     userName.controller.text = messageToEdit.userName;
     text.controller.text = messageToEdit.text;
     isFormExpanded = true;
@@ -83,7 +83,7 @@ class AddEditMessageModel extends AbstractModel {
 
   void _clearForm() {
     text.clear();
-    id = null;
+    _id = null;
     replyTo = null;
   }
 
@@ -110,12 +110,12 @@ class AddEditMessageModel extends AbstractModel {
   Future<void> save() async {
     if (validate()) {
       textFocusNode.unfocus(); // иначе после закрытия оверлея фокус вернется, и форма опять откроется
-      final addEditMessage = AddEditMessage(userName: userName.value!, text: text.value!, id: id, replyTo: replyTo);
+      final addEditMessage = AddEditMessage(userName: userName.value!, text: text.value!, id: _id, replyTo: replyTo);
       startWaiting();
       try {
         // await Future.delayed(Duration(seconds: 2));
         // throw Exception('Testing adding new message error');
-        if (id == null) {
+        if (_id == null) {
           await _repository.add(addEditMessage);
           await messageListModel.fetchNewer();
         } else {
