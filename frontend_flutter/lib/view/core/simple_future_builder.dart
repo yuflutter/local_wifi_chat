@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:local_wifi_chat_frontend/view/core/error_log_presenter.dart';
+import 'package:local_wifi_chat_frontend/view/core/error_log_presenters.dart';
 
 /// Синтаксический сахар над FutureBuilder.
 class SimpleFutureBuilder<T> extends StatelessWidget {

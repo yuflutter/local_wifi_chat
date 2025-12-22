@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/model/audio_room_model.dart';
 import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/view/connect_dialog.dart';
 import 'package:local_wifi_chat_frontend/features/AUDIO_ROOM/view/participant_tile.dart';
-import 'package:local_wifi_chat_frontend/view/core/error_log_presenter.dart';
+import 'package:local_wifi_chat_frontend/view/core/error_log_presenters.dart';
 
 class AudioRoomPage extends StatefulWidget {
   const AudioRoomPage({super.key});

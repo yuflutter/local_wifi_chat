@@ -5,8 +5,8 @@ import 'package:local_wifi_chat_frontend/core/di.dart';
 import 'package:local_wifi_chat_frontend/core/logger.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// Большинство ошибок мы показываем так. Исключение - ошибки инициализации приложения или страницы,
-/// которые мы показываем вместо контента, используя FutureBuilder.
+/// Большинство ошибок мы показываем попапом поверх контента. Исключение - ошибки инициализации экрана или виджета,
+/// которые мы показываем вместо контента, используя ErrorLogWidget внутри FutureBuilder | SimpleFutureBuilder.
 void errorLogPresenter(BuildContext context, Object e, StackTrace? s) {
   WidgetsBinding.instance.addPostFrameCallback(
     (_) => showErrorLogPopup(context, error: e, stack: s),

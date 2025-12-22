@@ -11,4 +11,6 @@ void showWaitingOverlay(BuildContext context) {
   );
 }
 
-void hideWaitingOverlay(BuildContext context) => (context.mounted) ? Navigator.pop(context) : null;
+void hideWaitingOverlay(BuildContext context) {
+  if (context.mounted) Navigator.pop(context);
+}

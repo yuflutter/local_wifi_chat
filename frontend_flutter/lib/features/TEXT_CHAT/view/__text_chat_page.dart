@@ -6,7 +6,7 @@ import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/model/add_edit_messa
 import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/model/message_list_model.dart';
 import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/view/add_edit_message_form.dart';
 import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/view/message_list_widget.dart';
-import 'package:local_wifi_chat_frontend/view/core/error_log_presenter.dart';
+import 'package:local_wifi_chat_frontend/view/core/error_log_presenters.dart';
 import 'package:local_wifi_chat_frontend/view/core/simple_future_builder.dart';
 
 class TextChatPage extends StatefulWidget {

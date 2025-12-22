@@ -88,16 +88,21 @@ class _MessageListTileState extends State<MessageListTile> {
                       itemBuilder: (context) {
                         final hasSelection = _selectedText.isNotEmpty;
                         return [
-                          PopupMenuItem(
-                            onTap: () => _reply(context),
-                            child: Text('Ответить'),
-                          ),
+                          if (_selectedText.isEmpty)
+                            PopupMenuItem(
+                              onTap: () => _reply(context),
+                              child: Text('Ответить'),
+                            ),
                           PopupMenuItem(
                             enabled: hasSelection,
                             onTap: hasSelection ? () => _reply(context, quote: _selectedText) : null,
                             child: Text('Ответить с цитатой'),
                           ),
-                          if (isMine) PopupMenuItem(onTap: () => _edit(context), child: Text('Редактировать')),
+                          if (isMine)
+                            PopupMenuItem(
+                              onTap: () => _edit(context),
+                              child: Text('Редактировать'),
+                            ),
                         ];
                       },
                       tooltip: 'Меню',
