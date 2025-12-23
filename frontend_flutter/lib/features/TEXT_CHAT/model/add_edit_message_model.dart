@@ -4,7 +4,7 @@ import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/model/message_list_m
 import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/entity/messages.dart';
 import 'package:local_wifi_chat_frontend/features/TEXT_CHAT/entity/repos.dart';
 import 'package:local_wifi_chat_frontend/model/abstract_model.dart';
-import 'package:local_wifi_chat_frontend/model/field.dart';
+import 'package:local_wifi_chat_frontend/model/fields.dart';
 import 'package:local_wifi_chat_frontend/user_session.dart';
 import 'package:local_wifi_chat_frontend/core/scope_fun.dart';
 

@@ -2,9 +2,9 @@
 /// Иногда полезная вещь при использовании ChangeNotifier. Но немного опасная.
 /// Не нужна в архитектурах с иммутабельным стейтом (например Cubit).
 class OneTimeEvent<T> {
-  OneTimeEvent(this._value);
-
   T? _value;
+
+  OneTimeEvent(this._value);
 
   bool get exists => (_value != null);
 
@@ -16,9 +16,9 @@ class OneTimeEvent<T> {
 }
 
 class OneTimeFlag {
-  OneTimeFlag(this._value);
-
   bool _value;
+
+  OneTimeFlag(this._value);
 
   bool get read => _value;
 
