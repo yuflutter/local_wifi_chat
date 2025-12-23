@@ -97,9 +97,9 @@ class AddEditMessageModel extends AbstractModel {
     userName.trim();
     text.trim();
     final res = formKey.currentState?.validate();
-    if (userName.hasError) {
+    if (userName.errorText != null) {
       userName.focusNode.requestFocus();
-    } else if (text.hasError) {
+    } else if (text.errorText != null) {
       text.focusNode.requestFocus();
     }
     return res ?? false;

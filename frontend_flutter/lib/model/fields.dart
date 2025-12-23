@@ -13,7 +13,7 @@ abstract class Field<T> implements Disposable {
   T? value;
   final String label;
   final String? hint;
-  bool hasError = false;
+  String? errorText;
   PrivateValidator<T> _validator;
 
   PrivateValidator<T> get validator => _validator;
@@ -21,10 +21,10 @@ abstract class Field<T> implements Disposable {
   void _setValidator(PublicValidator<T>? newValidator) {
     _validator = (newValidator != null)
         ? (T? v) {
-            hasError = false;
+            errorText = null;
             final res = newValidator(v, label);
             if (res != null) {
-              hasError = true;
+              errorText = res;
             } else {
               value = v;
             }
@@ -38,7 +38,7 @@ abstract class Field<T> implements Disposable {
     _setValidator(validator);
   }
 
-  void clear() => hasError = false;
+  void clear() => errorText = null;
 }
 
 /// Текстовое поле ввода с контроллером и валидацией. Используется в слое моделей, а не виджетов.
