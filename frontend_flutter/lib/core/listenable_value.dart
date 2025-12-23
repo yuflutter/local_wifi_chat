@@ -27,7 +27,7 @@ abstract class ListenableValuePrivate<T> {
 }
 
 /// Полная реализация обеих интерфейсов.
-/// Подход к обработке ошибок аналогичен AbstactModel - считаем ошибку одноразовым атрибутом,
+/// Подход к обработке ошибок аналогичен AbstractModel - считаем ошибку одноразовым атрибутом,
 /// поэтому в стейте ошибку не храним, а передаем ее в стрим, предполагая, что она будет обработана презентером.
 class ListenableValue<T> implements ListenableValuePublic<T>, ListenableValuePrivate<T> {
   T _value;

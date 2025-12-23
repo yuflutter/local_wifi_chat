@@ -98,6 +98,8 @@ class AddEditMessageModel extends AbstractModel {
   void clearReplyTo() => notify(() => replyTo = null);
 
   bool validate() {
+    userName.trim();
+    text.trim();
     final res = formKey.currentState?.validate();
     if (userName.hasError) {
       userNameFocusNode.requestFocus();

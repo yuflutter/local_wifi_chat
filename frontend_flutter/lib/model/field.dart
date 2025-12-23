@@ -58,6 +58,8 @@ class StringField extends Field<String> {
     super.clear();
   }
 
+  void trim() => controller.text = controller.text.trim();
+
   static PublicValidator<String> emptyStringValidator = (value, String label) {
     if (value?.isEmpty ?? false) {
       return 'Поле "$label" обязательно';
