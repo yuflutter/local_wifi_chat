@@ -61,7 +61,7 @@ class AddEditMessageForm extends StatelessWidget {
 
                     TextFormField(
                       controller: model.userName.controller,
-                      focusNode: model.userNameFocusNode,
+                      focusNode: model.userName.focusNode,
                       decoration: InputDecoration(
                         labelText: model.userName.label,
                         hintText: model.userName.hint,
@@ -79,7 +79,7 @@ class AddEditMessageForm extends StatelessWidget {
                     children: [
                       TextFormField(
                         controller: model.text.controller,
-                        focusNode: model.textFocusNode,
+                        focusNode: model.text.focusNode,
                         decoration: InputDecoration(
                           labelText: model.text.label,
                           hintText: model.text.hint,

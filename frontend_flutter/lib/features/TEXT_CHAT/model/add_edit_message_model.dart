@@ -27,25 +27,21 @@ class AddEditMessageModel extends AbstractModel {
   var isFormExpanded = false;
   final formKey = GlobalKey<FormState>();
 
-  /// Управление фокусом перенесено в модель, так как это часть вью-логики раскрытия формы и показа ошибок.
-  final userNameFocusNode = FocusNode();
-  late final FocusNode textFocusNode = FocusNode()
-    ..addListener(() {
-      if (textFocusNode.hasFocus && !isFormExpanded) startAdding();
-    });
-
   AddEditMessageModel({
     super.errorPresenter,
     required this.messageListModel,
     AbstractMessagesRepository? repository,
-  }) : _repository = repository ?? di<AbstractMessagesRepository>();
+  }) : _repository = repository ?? di<AbstractMessagesRepository>() {
+    /// Управление фокусом перенесено в модель, так как это часть вью-логики раскрытия формы и показа ошибок.
+    text.focusNode.addListener(() {
+      if (text.focusNode.hasFocus && !isFormExpanded) startAdding();
+    });
+  }
 
   @override
   void dispose() {
     userName.dispose();
     text.dispose();
-    userNameFocusNode.dispose();
-    textFocusNode.dispose();
     super.dispose();
   }
 
@@ -59,9 +55,9 @@ class AddEditMessageModel extends AbstractModel {
     // сначала показать всю форму, и только в следующем тике поставить фокус
     await Future.delayed(Duration(milliseconds: 200));
     if (userName.value?.isEmpty ?? true) {
-      userNameFocusNode.requestFocus();
+      userName.focusNode.requestFocus();
     } else {
-      textFocusNode.requestFocus();
+      text.focusNode.requestFocus();
     }
   }
 
@@ -75,9 +71,9 @@ class AddEditMessageModel extends AbstractModel {
     // сначала показать всю форму, и только в следующем тике поставить фокус
     await Future.delayed(Duration(milliseconds: 200));
     if (userName.value?.isEmpty ?? true) {
-      userNameFocusNode.requestFocus();
+      userName.focusNode.requestFocus();
     } else {
-      textFocusNode.requestFocus();
+      text.focusNode.requestFocus();
     }
   }
 
@@ -88,7 +84,7 @@ class AddEditMessageModel extends AbstractModel {
   }
 
   void clearAndCollapseForm() {
-    textFocusNode.unfocus();
+    text.focusNode.unfocus();
     formKey.currentState?.reset();
     _clearForm();
     isFormExpanded = false;
@@ -102,16 +98,16 @@ class AddEditMessageModel extends AbstractModel {
     text.trim();
     final res = formKey.currentState?.validate();
     if (userName.hasError) {
-      userNameFocusNode.requestFocus();
+      userName.focusNode.requestFocus();
     } else if (text.hasError) {
-      textFocusNode.requestFocus();
+      text.focusNode.requestFocus();
     }
     return res ?? false;
   }
 
   Future<void> save() async {
     if (validate()) {
-      textFocusNode.unfocus(); // иначе после закрытия оверлея фокус вернется, и форма опять откроется
+      text.focusNode.unfocus(); // иначе после закрытия оверлея фокус вернется, и форма опять откроется
       final addEditMessage = AddEditMessage(userName: userName.value!, text: text.value!, id: _id, replyTo: replyTo);
       startWaiting();
       try {

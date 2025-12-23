@@ -46,11 +46,15 @@ abstract class Field<T> implements Disposable {
 class StringField extends Field<String> {
   late final TextEditingController controller = TextEditingController(text: value)
     ..addListener(() => value = controller.text);
+  final focusNode = FocusNode();
 
   StringField({super.value, required super.label, super.hint, super.validator});
 
   @override
-  void dispose() => controller.dispose();
+  void dispose() {
+    controller.dispose();
+    focusNode.dispose();
+  }
 
   @override
   void clear() {
@@ -60,11 +64,6 @@ class StringField extends Field<String> {
 
   void trim() => controller.text = controller.text.trim();
 
-  static PublicValidator<String> emptyStringValidator = (value, String label) {
-    if (value?.isEmpty ?? false) {
-      return 'Поле "$label" обязательно';
-    } else {
-      return null;
-    }
-  };
+  static PublicValidator<String> emptyStringValidator = (value, String label) =>
+      (value?.isEmpty ?? false) ? 'Поле "$label" обязательно' : null;
 }
